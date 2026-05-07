@@ -1,3 +1,4 @@
+import 'package:flash_mind/features/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class FlashcardApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flashcard App',
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      home: const HomeScreen(),
     );
   }
 }
@@ -23,12 +24,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flashcards'),
-      ),
-      body: const Center(
-        child: Text('Home'),
-      ),
+      appBar: AppBar(title: const Text('Flashcards')),
+      body: const Center(child: Text('Home')),
     );
   }
 }
