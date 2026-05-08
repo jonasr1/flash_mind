@@ -7,28 +7,45 @@ class StatsSection extends StatelessWidget {
 
   const StatsSection({super.key, required this.stats});
 
-  Widget buildCard({
+  Widget buildCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            Text(title),
-          ],
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 24, color: colorScheme.primary),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -39,14 +56,16 @@ class StatsSection extends StatelessWidget {
     return Row(
       children: [
         buildCard(
-          icon: Icons.local_fire_department,
+          context,
+          icon: Icons.local_fire_department_rounded,
           title: 'Sequência',
           value: '${stats.streakDays} dias',
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         buildCard(
+          context,
           icon: Icons.style,
-          title: 'Revisados Hoje',
+          title: 'Revisados',
           value: '${stats.reviewedToday}',
         ),
       ],

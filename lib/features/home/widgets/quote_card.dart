@@ -7,34 +7,50 @@ class QuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.format_quote, size: 28, color: Colors.black),
-          const SizedBox(height: 8),
-          Text(
-            quote.text,
-            style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '— ${quote.author}',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.black54,
+    final theme = Theme.of(context);
+
+    return Card(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.format_quote_rounded,
+              size: 24,
+              color: theme.colorScheme.primary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              quote.text,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontSize: 15,
+                fontStyle: FontStyle.italic,
+                color: theme.colorScheme.onSurface,
+                height: 1.5,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  width: 20,
+                  height: 1,
+                  color: theme.colorScheme.outlineVariant,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  quote.author,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,13 +2,13 @@ import '../models/quote.dart';
 
 const List<Quote> quotes = [
   Quote(
-    text: 'Pequenos passos todos os dias constroem grandes resultados.',
-    author: 'FlashMind',
+    text: 'O sucesso é a soma de pequenos esforços repetidos dia após dia.',
+    author: 'Robert Collier',
   ),
   Quote(text: 'Consistência supera intensidade.', author: 'Angela Duckworth'),
   Quote(
-    text: 'O sucesso é a soma de pequenos esforços repetidos dia após dia.',
-    author: 'Robert Collier',
+    text: 'Pequenos passos todos os dias constroem grandes resultados.',
+    author: 'FlashMind',
   ),
   Quote(text: 'Aprender nunca esgota a mente.', author: 'Leonardo da Vinci'),
   Quote(

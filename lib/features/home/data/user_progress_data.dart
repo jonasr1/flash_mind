@@ -1,3 +1,3 @@
 import '../models/user_progress.dart';
 
-const userProgress = UserProgress(currentXP: 0);
+UserProgress userProgress = const UserProgress(currentXP: 0);
