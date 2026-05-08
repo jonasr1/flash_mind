@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class HeaderSection extends StatelessWidget {
-  const HeaderSection({super.key});
+  final IconData actionIcon;
+  final VoidCallback onActionPressed;
+
+  const HeaderSection({
+    super.key,
+    required this.actionIcon,
+    required this.onActionPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +49,7 @@ class HeaderSection extends StatelessWidget {
             ),
           ],
         ),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.menu)),
+        IconButton(onPressed: onActionPressed, icon: Icon(actionIcon)),
       ],
     );
   }

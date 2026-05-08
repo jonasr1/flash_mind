@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const HeaderSection(),
+              HeaderSection(actionIcon: Icons.menu, onActionPressed: () {}),
               const Divider(height: 32, thickness: 1, color: Colors.black26),
               Expanded(
                 child: SingleChildScrollView(

@@ -53,7 +53,7 @@ class FlashcardApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF09090B),
+            backgroundColor: primaryColor,
             foregroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(
@@ -105,8 +105,8 @@ class FlashcardApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFAFAFA),
-            foregroundColor: const Color(0xFF09090B),
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -120,18 +120,6 @@ class FlashcardApp extends StatelessWidget {
         ),
       ),
       home: const HomeScreen(),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Flashcards')),
-      body: const Center(child: Text('Home')),
     );
   }
 }

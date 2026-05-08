@@ -1,3 +1,4 @@
+import 'package:flash_mind/features/decks/screens/decks_screen.dart';
 import 'package:flutter/material.dart';
 
 class StartButton extends StatelessWidget {
@@ -6,7 +7,11 @@ class StartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const DecksScreen()));
+      },
       icon: const Icon(Icons.play_arrow_rounded, size: 24),
       label: const Text('Iniciar Sessão'),
     );
