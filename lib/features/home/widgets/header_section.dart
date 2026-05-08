@@ -5,33 +5,39 @@ class HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: Colors.deepPurpleAccent.shade200,
-                borderRadius: BorderRadius.circular(16),
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.psychology,
-                size: 52,
-                color: Colors.white,
+              child: Icon(
+                Icons.psychology_outlined,
+                size: 32,
+                color: colorScheme.primary,
               ),
             ),
-            const SizedBox(width: 12),
-            const Column(
+            const SizedBox(width: 16),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'FlashMind',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: theme.textTheme.displaySmall?.copyWith(fontSize: 20),
                 ),
-                Text('Treine sua mente todos os dias'),
+                Text(
+                  'Treine sua mente hoje',
+                  style: theme.textTheme.bodyMedium,
+                ),
               ],
             ),
           ],

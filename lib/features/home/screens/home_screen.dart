@@ -18,19 +18,38 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const HeaderSection(),
               const Divider(height: 32, thickness: 1, color: Colors.black26),
-              QuoteCard(quote: getDailyQuote()),
-              const SizedBox(height: 24),
-              LevelCard(progress: userProgress),
-              const SizedBox(height: 24),
-              StatsSection(stats: statsData,),
-              Spacer(),
-              StartButton()
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      QuoteCard(quote: getDailyQuote()),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Seu Progresso',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      LevelCard(progress: userProgress),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Estatísticas',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      StatsSection(stats: statsData),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+              const StartButton(),
             ],
           ),
         ),
