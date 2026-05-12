@@ -1,3 +1,4 @@
+import 'package:flash_mind/features/flashcards/screens/flashcard_session_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../models/deck.dart';
@@ -12,40 +13,43 @@ class DeckListItem extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// linha superior: título + menu
-            Row(
-              children: [
-                Expanded(
-                  child: Text(deck.title, style: theme.textTheme.titleMedium),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.more_vert_rounded),
-                ),
-              ],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => FlashcardSessionScreen(deck: deck),
             ),
-
-            const SizedBox(height: 4),
-
-            /// progresso textual
-            Text(
-              '${deck.reviewedCards}/${deck.totalCards} revisados',
-              style: theme.textTheme.bodyMedium,
-            ),
-
-            const SizedBox(height: 12),
-
-            /// barra de progresso
-            LinearProgressIndicator(
-              value: deck.progress,
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ],
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(deck.title, style: theme.textTheme.titleMedium),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.more_vert_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${deck.reviewedCards}/${deck.totalCards} revisados',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              LinearProgressIndicator(
+                value: deck.progress,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ],
+          ),
         ),
       ),
     );
