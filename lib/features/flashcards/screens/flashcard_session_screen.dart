@@ -1,6 +1,5 @@
 import 'package:flash_mind/features/decks/models/deck.dart';
 import 'package:flutter/material.dart';
-import 'package:flash_mind/features/flashcards/data/flashcards_data.dart';
 
 import '../widgets/flashcard_view.dart';
 
@@ -18,7 +17,10 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   int currentIndex = 0;
 
   void goToNextFlashcard() {
-    if (currentIndex >= flashcards.length - 1) {
+    final isLastCard = currentIndex >= widget.deck.flashcards.length - 1;
+
+    if (isLastCard) {
+      showSessionCompletedDialog();
       return;
     }
 
@@ -26,6 +28,29 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
       currentIndex++;
       isAnswerVisible = false;
     });
+  }
+
+  void showSessionCompletedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Sessão concluída 🎉'),
+          content: const Text(
+            'Você revisou todos os flashcards deste baralho.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Voltar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void showAnswer() {
@@ -36,7 +61,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentFlashcard = flashcards[currentIndex];
+    final currentFlashcard = widget.deck.flashcards[currentIndex];
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -64,7 +89,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
               Row(
                 children: [
                   Text(
-                    '${currentIndex + 1}/${flashcards.length}',
+                    '${currentIndex + 1}/${widget.deck.flashcards.length}',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const Spacer(),
