@@ -2,10 +2,9 @@ import 'package:flash_mind/features/flashcards/models/flashcard.dart';
 
 import '../models/deck.dart';
 
-const decks = [
+final List<Deck> decks = [
   Deck(
     title: 'Python',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(
         question: 'O que é uma lista em Python?',
@@ -19,7 +18,6 @@ const decks = [
   ),
   Deck(
     title: 'POO',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(
         question: 'O que é encapsulamento?',
@@ -33,7 +31,6 @@ const decks = [
   ),
   Deck(
     title: 'Flutter',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(
         question: 'O que é um Widget?',
@@ -47,7 +44,6 @@ const decks = [
   ),
   Deck(
     title: 'Django',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(
         question: 'O que é uma Model?',
@@ -61,7 +57,6 @@ const decks = [
   ),
   Deck(
     title: 'HTML',
-    reviewedCards: 2,
     flashcards: [
       Flashcard(
         question: 'O que é uma tag?',
@@ -75,7 +70,6 @@ const decks = [
   ),
   Deck(
     title: 'CSS',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(
         question: 'O que faz margin?',
@@ -89,7 +83,6 @@ const decks = [
   ),
   Deck(
     title: 'Git',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(
         question: 'O que faz git commit?',
@@ -103,7 +96,6 @@ const decks = [
   ),
   Deck(
     title: 'SQL',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(question: 'O que faz SELECT?', answer: 'Consulta dados.'),
       Flashcard(question: 'O que faz WHERE?', answer: 'Filtra registros.'),
@@ -111,7 +103,6 @@ const decks = [
   ),
   Deck(
     title: 'Linux',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(question: 'O que faz ls?', answer: 'Lista arquivos.'),
       Flashcard(question: 'O que faz cd?', answer: 'Muda de diretório.'),
@@ -119,7 +110,6 @@ const decks = [
   ),
   Deck(
     title: 'Dart',
-    reviewedCards: 0,
     flashcards: [
       Flashcard(
         question: 'O que é final?',

@@ -5,8 +5,9 @@ import 'deck_list_item.dart';
 
 class DeckList extends StatelessWidget {
   final List<Deck> decks;
+  final VoidCallback? onDeckUpdated;
 
-  const DeckList({super.key, required this.decks});
+  const DeckList({super.key, required this.decks, this.onDeckUpdated});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class DeckList extends StatelessWidget {
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: DeckListItem(deck: decks[index]),
+          child: DeckListItem(deck: decks[index], onDeckUpdated: onDeckUpdated),
         );
       },
     );

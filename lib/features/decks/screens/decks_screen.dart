@@ -5,8 +5,15 @@ import 'package:flash_mind/features/decks/widgets/decks_summary.dart';
 import 'package:flash_mind/features/decks/widgets/screen_header.dart';
 import 'package:flutter/material.dart';
 
-class DecksScreen extends StatelessWidget {
+class DecksScreen extends StatefulWidget {
   const DecksScreen({super.key});
+
+  @override
+  State<DecksScreen> createState() => _DecksScreenState();
+}
+
+class _DecksScreenState extends State<DecksScreen> {
+  void rebuild() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,9 @@ class DecksScreen extends StatelessWidget {
               ScreenHeader(
                 title: 'Baralhos',
                 actionIcon: Icons.bar_chart_rounded,
-                onActionPressed: () {},
+                onActionPressed: () {
+                  // TODO: Implement action
+                },
               ),
 
               Divider(
@@ -38,7 +47,7 @@ class DecksScreen extends StatelessWidget {
                     children: [
                       const DecksSummary(),
                       const SizedBox(height: 24),
-                      DeckList(decks: decks),
+                      DeckList(decks: decks, onDeckUpdated: rebuild),
                     ],
                   ),
                 ),

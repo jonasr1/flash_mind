@@ -1,4 +1,7 @@
 import 'package:flash_mind/features/decks/models/deck.dart';
+import 'package:flash_mind/features/flashcards/models/flashcard.dart';
+import 'package:flash_mind/features/flashcards/models/review_rating.dart';
+import 'package:flash_mind/features/flashcards/services/spaced_repetition_service.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/flashcard_view.dart';
@@ -15,19 +18,27 @@ class FlashcardSessionScreen extends StatefulWidget {
 class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   bool isAnswerVisible = false;
   int currentIndex = 0;
+  final spacedRepetitionService = SpacedRepetitionService();
+  List<Flashcard> get dueFlashcards {
+    return widget.deck.flashcards
+        .where((card) => card.nextReviewAt.isBefore(DateTime.now()))
+        .toList();
+  }
 
-  void goToNextFlashcard() {
-    final isLastCard = currentIndex >= widget.deck.flashcards.length - 1;
+  void reviewCurrentFlashcard(ReviewRating rating) {
+    final currentCard = dueFlashcards[currentIndex];
 
-    if (isLastCard) {
+    setState(() {
+      spacedRepetitionService.reviewCard(currentCard, rating);
+      isAnswerVisible = false;
+    });
+
+    final hasMoreCards = currentIndex < dueFlashcards.length;
+
+    if (!hasMoreCards) {
       showSessionCompletedDialog();
       return;
     }
-
-    setState(() {
-      currentIndex++;
-      isAnswerVisible = false;
-    });
   }
 
   void showSessionCompletedDialog() {
@@ -61,7 +72,14 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentFlashcard = widget.deck.flashcards[currentIndex];
+    if (dueFlashcards.isEmpty) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(child: Text('Nenhum flashcard para revisar agora 🎉')),
+        ),
+      );
+    }
+    final currentFlashcard = dueFlashcards[currentIndex];
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -89,7 +107,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
               Row(
                 children: [
                   Text(
-                    '${currentIndex + 1}/${widget.deck.flashcards.length}',
+                    '${currentIndex + 1}/${dueFlashcards.length}',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const Spacer(),
@@ -125,7 +143,8 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                       child: _ActionButton(
                         label: 'Não sabia',
                         color: Colors.red,
-                        onPressed: goToNextFlashcard,
+                        onPressed: () =>
+                            reviewCurrentFlashcard(ReviewRating.forgot),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -133,7 +152,8 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                       child: _ActionButton(
                         label: 'Difícil',
                         color: Colors.orange,
-                        onPressed: goToNextFlashcard,
+                        onPressed: () =>
+                            reviewCurrentFlashcard(ReviewRating.difficult),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -141,7 +161,8 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                       child: _ActionButton(
                         label: 'Fácil',
                         color: Colors.green,
-                        onPressed: goToNextFlashcard,
+                        onPressed: () =>
+                            reviewCurrentFlashcard(ReviewRating.easy),
                       ),
                     ),
                   ],

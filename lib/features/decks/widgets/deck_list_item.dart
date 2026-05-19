@@ -5,8 +5,9 @@ import '../models/deck.dart';
 
 class DeckListItem extends StatelessWidget {
   final Deck deck;
+  final VoidCallback? onDeckUpdated;
 
-  const DeckListItem({super.key, required this.deck});
+  const DeckListItem({super.key, required this.deck, this.onDeckUpdated});
 
   @override
   Widget build(BuildContext context) {
@@ -15,12 +16,14 @@ class DeckListItem extends StatelessWidget {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.of(context).push(
+        onTap: () async {
+          await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => FlashcardSessionScreen(deck: deck),
             ),
           );
+          if (!context.mounted) return;
+          onDeckUpdated?.call();
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
