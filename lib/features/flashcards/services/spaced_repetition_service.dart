@@ -15,6 +15,7 @@ class SpacedRepetitionService {
 
   void reviewCard(Flashcard card, ReviewRating rating) {
     card.timesReviewed++;
+    card.lastReviewedAt = DateTime.now();
 
     switch (rating) {
       case ReviewRating.forgot:

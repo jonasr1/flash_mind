@@ -5,6 +5,7 @@ class Flashcard {
   int timesReviewed;
   int reviewStep;
   DateTime nextReviewAt;
+  DateTime? lastReviewedAt;
 
   Flashcard({
     required this.question,
@@ -12,5 +13,6 @@ class Flashcard {
     this.timesReviewed = 0,
     this.reviewStep = 0,
     DateTime? nextReviewAt,
+    this.lastReviewedAt,
   }) : nextReviewAt = nextReviewAt ?? DateTime.now();
 }

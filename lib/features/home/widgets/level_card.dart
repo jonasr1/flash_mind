@@ -1,5 +1,6 @@
-import '../models/user_progress.dart';
 import 'package:flutter/material.dart';
+
+import 'package:flash_mind/core/progress/models/user_progress.dart';
 
 class LevelCard extends StatelessWidget {
   final UserProgress progress;
@@ -75,13 +76,13 @@ class LevelCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${progress.currentLevelXP} XP',
+                  '${progress.currentLevelXp} XP',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
-                  'Próximo nível em ${100 - progress.currentLevelXP} XP',
+                  'Próximo nível em ${progress.xpForNextLevel} XP',
                   style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12),
                 ),
               ],

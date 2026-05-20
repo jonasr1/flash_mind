@@ -1,8 +1,32 @@
 import 'package:flash_mind/features/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
+import 'core/app_scope.dart';
+import 'core/progress/controllers/user_progress_controller.dart';
+import 'core/progress/repositories/in_memory_user_progress_repository.dart';
+import 'core/progress/services/gamification_service.dart';
+import 'core/review/review_service.dart';
+import 'features/flashcards/services/spaced_repetition_service.dart';
+
 void main() {
-  runApp(const FlashcardApp());
+  final userProgressController = UserProgressController(
+    repository: InMemoryUserProgressRepository(),
+  );
+  userProgressController.init();
+
+  final reviewService = ReviewService(
+    spacedRepetitionService: SpacedRepetitionService(),
+    gamificationService: const GamificationService(),
+    userProgressController: userProgressController,
+  );
+
+  runApp(
+    AppScope(
+      userProgressController: userProgressController,
+      reviewService: reviewService,
+      child: const FlashcardApp(),
+    ),
+  );
 }
 
 class FlashcardApp extends StatelessWidget {

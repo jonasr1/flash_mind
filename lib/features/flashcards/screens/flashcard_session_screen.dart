@@ -1,9 +1,9 @@
 import 'package:flash_mind/features/decks/models/deck.dart';
 import 'package:flash_mind/features/flashcards/models/flashcard.dart';
 import 'package:flash_mind/features/flashcards/models/review_rating.dart';
-import 'package:flash_mind/features/flashcards/services/spaced_repetition_service.dart';
 import 'package:flutter/material.dart';
 
+import 'package:flash_mind/core/app_scope.dart';
 import '../widgets/flashcard_view.dart';
 
 class FlashcardSessionScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class FlashcardSessionScreen extends StatefulWidget {
 class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   bool isAnswerVisible = false;
   int currentIndex = 0;
-  final spacedRepetitionService = SpacedRepetitionService();
+
   List<Flashcard> get dueFlashcards {
     return widget.deck.flashcards
         .where((card) => card.nextReviewAt.isBefore(DateTime.now()))
@@ -29,13 +29,10 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     final currentCard = dueFlashcards[currentIndex];
 
     setState(() {
-      spacedRepetitionService.reviewCard(currentCard, rating);
+      AppScope.of(context).reviewService.reviewFlashcard(currentCard, rating);
       isAnswerVisible = false;
     });
-
-    final hasMoreCards = currentIndex < dueFlashcards.length;
-
-    if (!hasMoreCards) {
+    if (dueFlashcards.isEmpty) {
       showSessionCompletedDialog();
       return;
     }
@@ -72,14 +69,9 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (dueFlashcards.isEmpty) {
-      return Scaffold(
-        body: SafeArea(
-          child: Center(child: Text('Nenhum flashcard para revisar agora 🎉')),
-        ),
-      );
-    }
-    final currentFlashcard = dueFlashcards[currentIndex];
+    final currentFlashcard = dueFlashcards.isNotEmpty
+        ? dueFlashcards[currentIndex]
+        : null;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -104,37 +96,42 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text(
-                    '${currentIndex + 1}/${dueFlashcards.length}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const Spacer(),
-                  const Icon(
-                    Icons.local_fire_department_rounded,
-                    size: 18,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Combo: 3',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
+              if (dueFlashcards.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Text(
+                      '${currentIndex + 1}/${dueFlashcards.length}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const Spacer(),
+                    const Icon(
+                      Icons.local_fire_department_rounded,
+                      size: 18,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Combo: 3',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 12),
               Divider(color: Theme.of(context).colorScheme.outlineVariant),
               const SizedBox(height: 24),
               Expanded(
-                child: FlashcardView(
-                  question: currentFlashcard.question,
-                  answer: currentFlashcard.answer,
-                  isAnswerVisible: isAnswerVisible,
-                  onTap: showAnswer,
-                ),
+                child: dueFlashcards.isEmpty
+                    ? const _EmptyReviewState()
+                    : FlashcardView(
+                        question: currentFlashcard!.question,
+                        answer: currentFlashcard.answer,
+                        isAnswerVisible: isAnswerVisible,
+                        onTap: showAnswer,
+                      ),
               ),
-              if (isAnswerVisible) ...[
+              if (isAnswerVisible && dueFlashcards.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -168,6 +165,45 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                   ],
                 ),
               ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyReviewState extends StatelessWidget {
+  const _EmptyReviewState();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.check_circle_outline_rounded,
+                size: 48,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Nenhum flashcard para revisar',
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Volte mais tarde para continuar sua sequência.',
+                style: theme.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),

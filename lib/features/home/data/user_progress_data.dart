@@ -1,3 +1,5 @@
 import '../models/user_progress.dart';
 
-UserProgress userProgress = const UserProgress(currentXP: 0);
+@Deprecated('Use AppScope.of(context).userProgressController instead.')
+UserProgress userProgress =
+    const UserProgress(totalXp: 0, streakDays: 0, lastStudyDate: null);
