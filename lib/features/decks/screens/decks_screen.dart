@@ -1,4 +1,6 @@
-import 'package:flash_mind/features/decks/data/decks_data.dart';
+import 'package:flash_mind/core/app_scope.dart';
+import 'package:flash_mind/features/decks/models/deck.dart';
+import 'package:flash_mind/features/decks/screens/create_deck_screen.dart';
 import 'package:flash_mind/features/decks/widgets/create_deck_button.dart';
 import 'package:flash_mind/features/decks/widgets/deck_list.dart';
 import 'package:flash_mind/features/decks/widgets/decks_summary.dart';
@@ -13,7 +15,35 @@ class DecksScreen extends StatefulWidget {
 }
 
 class _DecksScreenState extends State<DecksScreen> {
-  void rebuild() => setState(() {});
+  List<Deck> decks = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadDecks();
+  }
+
+  Future<void> loadDecks() async {
+    final loadedDecks = await AppScope.of(context).deckService.getDecks();
+
+    if (!mounted) return;
+
+    setState(() {
+      decks = loadedDecks;
+    });
+  }
+
+  Future<void> openCreateDeckScreen() async {
+    final wasCreated = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const CreateDeckScreen()));
+
+    if (!mounted) return;
+
+    if (wasCreated == true) {
+      await loadDecks();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,12 +77,12 @@ class _DecksScreenState extends State<DecksScreen> {
                     children: [
                       DecksSummary(decks: decks),
                       const SizedBox(height: 24),
-                      DeckList(decks: decks, onDeckUpdated: rebuild),
+                      DeckList(decks: decks, onDeckUpdated: loadDecks),
                     ],
                   ),
                 ),
               ),
-              const CreateDeckButton(),
+              CreateDeckButton(onPressed: openCreateDeckScreen),
             ],
           ),
         ),

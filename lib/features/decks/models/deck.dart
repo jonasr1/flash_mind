@@ -1,10 +1,23 @@
 import 'package:flash_mind/features/flashcards/models/flashcard.dart';
 
 class Deck {
+  final String id;
   final String title;
+  final String description;
   final List<Flashcard> flashcards;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
-  const Deck({required this.title, required this.flashcards});
+  Deck({
+    String? id,
+    required this.title,
+    this.description = '',
+    required this.flashcards,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString(),
+       createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   int get totalCards => flashcards.length;
 
