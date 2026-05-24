@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'package:flash_mind/features/decks/models/deck.dart';
+
 class DecksSummary extends StatelessWidget {
-  const DecksSummary({super.key});
+  final List<Deck> decks;
+
+  const DecksSummary({super.key, required this.decks});
 
   Widget buildItem(
     BuildContext context, {
@@ -37,6 +41,18 @@ class DecksSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    var dueCount = 0;
+    var inProgressCount = 0;
+    var masteredCount = 0;
+
+    for (final deck in decks) {
+      for (final card in deck.flashcards) {
+        if (card.isDue) dueCount++;
+        if (card.isInProgress) inProgressCount++;
+        if (card.isMastered) masteredCount++;
+      }
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
@@ -45,21 +61,21 @@ class DecksSummary extends StatelessWidget {
             buildItem(
               context,
               title: 'Para estudar',
-              value: '12',
+              value: dueCount.toString(),
               valueColor: colorScheme.primary,
             ),
             Container(height: 45, width: 2, color: colorScheme.outlineVariant),
             buildItem(
               context,
               title: 'Em progresso',
-              value: '4',
+              value: inProgressCount.toString(),
               valueColor: Colors.orange,
             ),
             Container(height: 45, width: 2, color: colorScheme.outlineVariant),
             buildItem(
               context,
               title: 'Dominado',
-              value: '8',
+              value: masteredCount.toString(),
               valueColor: Colors.green,
             ),
           ],

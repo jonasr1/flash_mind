@@ -2,11 +2,13 @@ class UserProgress {
   final int totalXp;
   final int streakDays;
   final DateTime? lastStudyDate;
+  final int combo;
 
   const UserProgress({
     required this.totalXp,
     required this.streakDays,
     required this.lastStudyDate,
+    this.combo = 0,
   });
 
   int get level => (totalXp ~/ 100) + 1;
@@ -37,11 +39,13 @@ class UserProgress {
     int? totalXp,
     int? streakDays,
     DateTime? lastStudyDate,
+    int? combo,
   }) {
     return UserProgress(
       totalXp: totalXp ?? this.totalXp,
       streakDays: streakDays ?? this.streakDays,
       lastStudyDate: lastStudyDate ?? this.lastStudyDate,
+      combo: combo ?? this.combo,
     );
   }
 }

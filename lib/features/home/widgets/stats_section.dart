@@ -65,7 +65,7 @@ class StatsSection extends StatelessWidget {
         buildCard(
           context,
           icon: Icons.style,
-          title: 'Revisados',
+          title: 'Revisados Hoje',
           value: '${stats.reviewedToday}',
         ),
       ],

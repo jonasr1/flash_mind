@@ -28,6 +28,7 @@ class GamificationService {
 
     int streakDays = progress.streakDays;
     DateTime? lastStudyDate = last;
+    int combo = progress.combo;
 
     if (last != null) {
       final lastDay = DateTime(last.year, last.month, last.day);
@@ -36,16 +37,29 @@ class GamificationService {
         final isConsecutive = lastDay.add(const Duration(days: 1)) == today;
         streakDays = isConsecutive ? streakDays + 1 : 1;
         lastStudyDate = today;
+        combo = 0;
       }
     } else {
       streakDays = 1;
       lastStudyDate = today;
+      combo = 0;
+    }
+
+    switch (rating) {
+      case ReviewRating.forgot:
+        combo = 0;
+        break;
+      case ReviewRating.difficult:
+      case ReviewRating.easy:
+        combo += 1;
+        break;
     }
 
     return progress.copyWith(
       totalXp: progress.totalXp + earnedXp,
       streakDays: streakDays,
       lastStudyDate: lastStudyDate,
+      combo: combo,
     );
   }
 }

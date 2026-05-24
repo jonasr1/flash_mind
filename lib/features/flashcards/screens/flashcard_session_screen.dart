@@ -1,6 +1,10 @@
 import 'package:flash_mind/features/decks/models/deck.dart';
 import 'package:flash_mind/features/flashcards/models/flashcard.dart';
 import 'package:flash_mind/features/flashcards/models/review_rating.dart';
+import 'package:flash_mind/features/flashcards/widgets/answer_buttons.dart';
+import 'package:flash_mind/features/flashcards/widgets/empty_review_state.dart';
+import 'package:flash_mind/features/flashcards/widgets/session_header.dart';
+import 'package:flash_mind/features/flashcards/widgets/session_progress.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flash_mind/core/app_scope.dart';
@@ -19,22 +23,41 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   bool isAnswerVisible = false;
   int currentIndex = 0;
 
-  List<Flashcard> get dueFlashcards {
+  List<Flashcard> _getDueFlashcards(DateTime now) {
     return widget.deck.flashcards
-        .where((card) => card.nextReviewAt.isBefore(DateTime.now()))
+        .where((card) => card.nextReviewAt.isBefore(now))
         .toList();
   }
 
+  int _normalizeIndex(int index, int length) {
+    if (length <= 0) return 0;
+    if (index < 0) return 0;
+    if (index >= length) return length - 1;
+    return index;
+  }
+
   void reviewCurrentFlashcard(ReviewRating rating) {
-    final currentCard = dueFlashcards[currentIndex];
+    final currentDueFlashcards = _getDueFlashcards(DateTime.now());
+    if (currentDueFlashcards.isEmpty) return;
+
+    final safeCurrentIndex =
+        _normalizeIndex(currentIndex, currentDueFlashcards.length);
+    final currentCard = currentDueFlashcards[safeCurrentIndex];
+    var shouldShowSessionCompletedDialog = false;
 
     setState(() {
       AppScope.of(context).reviewService.reviewFlashcard(currentCard, rating);
       isAnswerVisible = false;
+
+      final updatedDueFlashcards = _getDueFlashcards(DateTime.now());
+      shouldShowSessionCompletedDialog = updatedDueFlashcards.isEmpty;
+
+      currentIndex =
+          _normalizeIndex(safeCurrentIndex, updatedDueFlashcards.length);
     });
-    if (dueFlashcards.isEmpty) {
+
+    if (shouldShowSessionCompletedDialog) {
       showSessionCompletedDialog();
-      return;
     }
   }
 
@@ -69,9 +92,13 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentFlashcard = dueFlashcards.isNotEmpty
-        ? dueFlashcards[currentIndex]
-        : null;
+    final dueFlashcards = _getDueFlashcards(DateTime.now());
+    final safeCurrentIndex =
+        _normalizeIndex(currentIndex, dueFlashcards.length);
+    final currentFlashcard =
+        dueFlashcards.isEmpty ? null : dueFlashcards[safeCurrentIndex];
+    final combo = AppScope.of(context).userProgressController.progress.combo;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -79,43 +106,14 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                    ),
-                  ),
-                  Text(
-                    'Baralho: ${widget.deck.title}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ],
-              ),
+              SessionHeader(deckTitle: widget.deck.title),
               const SizedBox(height: 12),
               if (dueFlashcards.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Text(
-                      '${currentIndex + 1}/${dueFlashcards.length}',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const Spacer(),
-                    const Icon(
-                      Icons.local_fire_department_rounded,
-                      size: 18,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Combo: 3',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
+                SessionProgress(
+                  currentIndex: safeCurrentIndex,
+                  totalCards: dueFlashcards.length,
+                  combo: combo,
                 ),
               ],
               const SizedBox(height: 12),
@@ -123,7 +121,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
               const SizedBox(height: 24),
               Expanded(
                 child: dueFlashcards.isEmpty
-                    ? const _EmptyReviewState()
+                    ? const EmptyReviewState()
                     : FlashcardView(
                         question: currentFlashcard!.question,
                         answer: currentFlashcard.answer,
@@ -131,110 +129,12 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                         onTap: showAnswer,
                       ),
               ),
-              if (isAnswerVisible && dueFlashcards.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: _ActionButton(
-                        label: 'Não sabia',
-                        color: Colors.red,
-                        onPressed: () =>
-                            reviewCurrentFlashcard(ReviewRating.forgot),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: _ActionButton(
-                        label: 'Difícil',
-                        color: Colors.orange,
-                        onPressed: () =>
-                            reviewCurrentFlashcard(ReviewRating.difficult),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: _ActionButton(
-                        label: 'Fácil',
-                        color: Colors.green,
-                        onPressed: () =>
-                            reviewCurrentFlashcard(ReviewRating.easy),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              if (isAnswerVisible && dueFlashcards.isNotEmpty)
+                AnswerButtons(onSelected: reviewCurrentFlashcard),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _EmptyReviewState extends StatelessWidget {
-  const _EmptyReviewState();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.check_circle_outline_rounded,
-                size: 48,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Nenhum flashcard para revisar',
-                style: theme.textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Volte mais tarde para continuar sua sequência.',
-                style: theme.textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final VoidCallback onPressed;
-
-  const _ActionButton({
-    required this.label,
-    required this.color,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(0, 44),
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-      child: Text(label),
     );
   }
 }

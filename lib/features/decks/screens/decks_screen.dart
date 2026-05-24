@@ -45,7 +45,7 @@ class _DecksScreenState extends State<DecksScreen> {
                   child: ListView(
                     padding: const EdgeInsets.only(bottom: 24),
                     children: [
-                      const DecksSummary(),
+                      DecksSummary(decks: decks),
                       const SizedBox(height: 24),
                       DeckList(decks: decks, onDeckUpdated: rebuild),
                     ],

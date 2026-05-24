@@ -41,10 +41,7 @@ class HeaderSection extends StatelessWidget {
                   'FlashMind',
                   style: theme.textTheme.displaySmall?.copyWith(fontSize: 20),
                 ),
-                Text(
-                  'Treine sua mente hoje',
-                  style: theme.textTheme.bodyMedium,
-                ),
+                Text('Treine sua mente', style: theme.textTheme.bodyMedium),
               ],
             ),
           ],
