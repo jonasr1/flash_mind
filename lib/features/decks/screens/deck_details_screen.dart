@@ -20,10 +20,32 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
   late final TextEditingController descriptionController;
 
   Future<void> deleteFlashcard(int index) async {
+    final flashcard = widget.deck.flashcards[index];
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Apagar carta'),
+        content: Text('Deseja apagar a carta "${flashcard.question}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Apagar'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true) return;
+    if (!mounted) return;
+
     final controller = DeckDetailsController(
       deckService: AppScope.of(context).deckService,
     );
-    final flashcard = widget.deck.flashcards[index];
 
     await controller.deleteFlashcard(deck: widget.deck, flashcard: flashcard);
 

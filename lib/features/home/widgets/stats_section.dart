@@ -59,7 +59,8 @@ class StatsSection extends StatelessWidget {
           context,
           icon: Icons.local_fire_department_rounded,
           title: 'Sequência',
-          value: '${stats.streakDays} dias',
+          value:
+              '${stats.streakDays} ${stats.streakDays == 1 ? 'dia' : 'dias'}',
         ),
         const SizedBox(width: 12),
         buildCard(

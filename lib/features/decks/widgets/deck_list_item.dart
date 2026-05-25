@@ -75,7 +75,10 @@ class DeckListItem extends StatelessWidget {
 
                         if (shouldDelete == true) {
                           if (!context.mounted) return;
-                          await AppScope.of(context).deckService.deleteDeck(deck);
+                          await AppScope.of(
+                            context,
+                          ).deckService.deleteDeck(deck);
+                          if (!context.mounted) return;
                           onDeckUpdated?.call();
                         }
                       }
