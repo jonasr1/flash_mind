@@ -1,3 +1,4 @@
+import 'package:flash_mind/features/decks/screens/deck_details_screen.dart';
 import 'package:flash_mind/features/flashcards/screens/flashcard_session_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -36,7 +37,15 @@ class DeckListItem extends StatelessWidget {
                     child: Text(deck.title, style: theme.textTheme.titleMedium),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DeckDetailsScreen(deck: deck),
+                        ),
+                      );
+                      if (!context.mounted) return;
+                      onDeckUpdated?.call();
+                    },
                     icon: const Icon(Icons.more_vert_rounded),
                   ),
                 ],

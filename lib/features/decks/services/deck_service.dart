@@ -12,7 +12,10 @@ class DeckService {
     return _repository.getDecks();
   }
 
-  Future<void> createDeck({required String title, String description = ''}) {
+  Future<Deck> createDeck({
+    required String title,
+    String description = '',
+  }) async {
     final now = DateTime.now();
     final deck = Deck(
       id: now.microsecondsSinceEpoch.toString(),
@@ -23,6 +26,35 @@ class DeckService {
       updatedAt: now,
     );
 
-    return _repository.createDeck(deck);
+    await _repository.createDeck(deck);
+    return deck;
+  }
+
+  Future<bool> existsWithTitle(String title) async {
+    final decks = await getDecks();
+    final trimmedTitle = title.trim().toLowerCase();
+    return decks.any(
+      (deck) => deck.title.trim().toLowerCase() == trimmedTitle,
+    );
+  }
+
+  Future<void> addFlashcard({
+    required Deck deck,
+    required String question,
+    required String answer,
+  }) async {
+    final flashcard = Flashcard(
+      question: question.trim(),
+      answer: answer.trim(),
+    );
+
+    await _repository.addFlashcard(deck, flashcard);
+  }
+
+  Future<void> deleteFlashcard({
+    required Deck deck,
+    required Flashcard flashcard,
+  }) {
+    return _repository.deleteFlashcard(deck, flashcard);
   }
 }

@@ -1,3 +1,4 @@
+import '../models/deck.dart';
 import '../services/deck_service.dart';
 
 class CreateDeckController {
@@ -10,13 +11,20 @@ class CreateDeckController {
     final trimmedTitle = title.trim();
 
     if (trimmedTitle.isEmpty) {
-      return 'Title is required';
+      return 'Título é obrigatório';
     }
 
     if (trimmedTitle.length > 100) {
-      return 'Title must be 100 characters or less';
+      return 'O título deve ter 100 caracteres ou menos';
     }
 
+    return null;
+  }
+
+  Future<String?> validateTitleUnique(String title) async {
+    if (await _deckService.existsWithTitle(title)) {
+      return 'Já existe um baralho com este título';
+    }
     return null;
   }
 
@@ -28,7 +36,7 @@ class CreateDeckController {
     return null;
   }
 
-  Future<bool> createDeck({
+  Future<Deck> createDeck({
     required String title,
     required String description,
   }) async {
@@ -36,10 +44,14 @@ class CreateDeckController {
     final descriptionError = validateDescription(description);
 
     if (titleError != null || descriptionError != null) {
-      return false;
+      throw ArgumentError('Invalid deck data');
     }
 
-    await _deckService.createDeck(title: title, description: description);
-    return true;
+    final uniqueError = await validateTitleUnique(title);
+    if (uniqueError != null) {
+      throw ArgumentError(uniqueError);
+    }
+
+    return _deckService.createDeck(title: title, description: description);
   }
 }

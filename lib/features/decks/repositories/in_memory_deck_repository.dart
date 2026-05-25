@@ -1,5 +1,6 @@
 import '../data/decks_data.dart';
 import '../models/deck.dart';
+import 'package:flash_mind/features/flashcards/models/flashcard.dart';
 import 'deck_repository.dart';
 
 class InMemoryDeckRepository implements DeckRepository {
@@ -11,5 +12,15 @@ class InMemoryDeckRepository implements DeckRepository {
   @override
   Future<void> createDeck(Deck deck) async {
     decks.add(deck);
+  }
+
+  @override
+  Future<void> addFlashcard(Deck deck, Flashcard flashcard) async {
+    deck.flashcards.add(flashcard);
+  }
+
+  @override
+  Future<void> deleteFlashcard(Deck deck, Flashcard flashcard) async {
+    deck.flashcards.remove(flashcard);
   }
 }

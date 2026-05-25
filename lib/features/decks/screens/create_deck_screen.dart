@@ -48,137 +48,132 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
       isSaving = true;
     });
 
+    final uniqueError = await controller.validateTitleUnique(
+      titleController.text,
+    );
+    if (uniqueError != null) {
+      setState(() {
+        titleError = uniqueError;
+        isSaving = false;
+      });
+      return;
+    }
+
     try {
-      await controller.createDeck(
+      final createdDeck = await controller.createDeck(
         title: titleController.text,
         description: descriptionController.text,
       );
 
       if (!mounted) return;
-      Navigator.of(context).pop(true);
-    } catch (_) {
+      Navigator.of(context).pop(createdDeck);
+    } catch (e) {
       if (!mounted) return;
 
       setState(() {
         isSaving = false;
       });
 
+      final message = e is ArgumentError ? e.message : 'Failed to save deck';
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to save deck')));
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  final theme = Theme.of(context);
-  final colorScheme = theme.colorScheme;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('Criar baralho'),
-    ),
-    body: SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Novo baralho',
-              style: theme.textTheme.displaySmall,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Organize seus flashcards por assunto ou tema.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Título',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-
-                    TextField(
-                      controller: titleController,
-                      enabled: !isSaving,
-                      maxLength: 100,
-                      textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        hintText: 'Ex.: Inglês',
-                        errorText: titleError,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Text(
-                      'Descrição',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-
-                    TextField(
-                      controller: descriptionController,
-                      enabled: !isSaving,
-                      maxLength: 300,
-                      maxLines: 4,
-                      textInputAction: TextInputAction.done,
-                      decoration: InputDecoration(
-                        hintText:
-                            'Ex.: Flashcards para praticar vocabulário',
-                        errorText: descriptionError,
-                      ),
-                    ),
-                  ],
+    return Scaffold(
+      appBar: AppBar(title: const Text('Criar baralho')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Novo baralho', style: theme.textTheme.displaySmall),
+              const SizedBox(height: 4),
+              Text(
+                'Organize seus flashcards por assunto ou tema.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
-            ),
 
-            const Spacer(),
+              const SizedBox(height: 24),
 
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: isSaving
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar'),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: titleController,
+                        enabled: !isSaving,
+                        maxLength: 100,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: 'Título',
+                          hintText: 'Ex.: Inglês',
+                          errorText: titleError,
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+
+                      TextField(
+                        controller: descriptionController,
+                        enabled: !isSaving,
+                        maxLength: 300,
+                        maxLines: 4,
+                        textInputAction: TextInputAction.done,
+                        decoration: InputDecoration(
+                          labelText: 'Descrição',
+                          hintText: 'Ex.: Flashcards para praticar vocabulário',
+                          errorText: descriptionError,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: isSaving ? null : saveDeck,
-                    child: isSaving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text('Salvar'),
+              ),
+
+              const Spacer(),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: isSaving
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: const Text('Cancelar'),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isSaving ? null : saveDeck,
+                      child: isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Salvar'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flash_mind/core/app_scope.dart';
 import 'package:flash_mind/features/decks/models/deck.dart';
 import 'package:flash_mind/features/decks/screens/create_deck_screen.dart';
+import 'package:flash_mind/features/decks/screens/deck_details_screen.dart';
 import 'package:flash_mind/features/decks/widgets/create_deck_button.dart';
 import 'package:flash_mind/features/decks/widgets/deck_list.dart';
 import 'package:flash_mind/features/decks/widgets/decks_summary.dart';
@@ -34,15 +35,21 @@ class _DecksScreenState extends State<DecksScreen> {
   }
 
   Future<void> openCreateDeckScreen() async {
-    final wasCreated = await Navigator.of(
+    final createdDeck = await Navigator.of(
       context,
-    ).push<bool>(MaterialPageRoute(builder: (_) => const CreateDeckScreen()));
+    ).push<Deck>(MaterialPageRoute(builder: (_) => const CreateDeckScreen()));
 
     if (!mounted) return;
 
-    if (wasCreated == true) {
-      await loadDecks();
+    if (createdDeck != null) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => DeckDetailsScreen(deck: createdDeck)),
+      );
+
+      if (!mounted) return;
     }
+
+    await loadDecks();
   }
 
   @override
