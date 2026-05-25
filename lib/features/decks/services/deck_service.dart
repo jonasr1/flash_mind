@@ -57,4 +57,8 @@ class DeckService {
   }) {
     return _repository.deleteFlashcard(deck, flashcard);
   }
+
+  Future<void> deleteDeck(Deck deck) {
+    return _repository.deleteDeck(deck);
+  }
 }

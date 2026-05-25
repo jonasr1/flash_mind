@@ -23,4 +23,9 @@ class InMemoryDeckRepository implements DeckRepository {
   Future<void> deleteFlashcard(Deck deck, Flashcard flashcard) async {
     deck.flashcards.remove(flashcard);
   }
+
+  @override
+  Future<void> deleteDeck(Deck deck) async {
+    decks.remove(deck);
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:flash_mind/core/app_scope.dart';
 import 'package:flash_mind/features/decks/screens/deck_details_screen.dart';
 import 'package:flash_mind/features/flashcards/screens/flashcard_session_screen.dart';
 import 'package:flutter/material.dart';
@@ -36,17 +37,67 @@ class DeckListItem extends StatelessWidget {
                   Expanded(
                     child: Text(deck.title, style: theme.textTheme.titleMedium),
                   ),
-                  IconButton(
-                    onPressed: () async {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => DeckDetailsScreen(deck: deck),
-                        ),
-                      );
-                      if (!context.mounted) return;
-                      onDeckUpdated?.call();
+                  PopupMenuButton<String>(
+                    onSelected: (value) async {
+                      if (value == 'details') {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => DeckDetailsScreen(deck: deck),
+                          ),
+                        );
+
+                        if (!context.mounted) return;
+                        onDeckUpdated?.call();
+                      }
+
+                      if (value == 'delete') {
+                        final shouldDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text('Apagar baralho'),
+                            content: Text('Deseja apagar "${deck.title}"?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: const Text('Apagar'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (shouldDelete == true) {
+                          if (!context.mounted) return;
+                          await AppScope.of(context).deckService.deleteDeck(deck);
+                          onDeckUpdated?.call();
+                        }
+                      }
                     },
-                    icon: const Icon(Icons.more_vert_rounded),
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(
+                        value: 'details',
+                        child: ListTile(
+                          leading: Icon(Icons.edit_outlined),
+                          title: Text('Detalhes do baralho'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: ListTile(
+                          leading: Icon(Icons.delete_outline_rounded),
+                          title: Text('Apagar baralho'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
