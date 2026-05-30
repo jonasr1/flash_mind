@@ -1,6 +1,6 @@
 class Flashcard {
-  final String question;
-  final String answer;
+  String question;
+  String answer;
 
   int reviewStep;
   int timesReviewed;

@@ -24,6 +24,14 @@ class MockDeckRepository implements DeckRepository {
   }
 
   @override
+  Future<void> updateFlashcard(Deck deck, Flashcard flashcard) async {
+    final index = deck.flashcards.indexOf(flashcard);
+    if (index != -1) {
+      deck.flashcards[index] = flashcard;
+    }
+  }
+
+  @override
   Future<void> deleteDeck(Deck deck) async {
     decks.remove(deck);
   }

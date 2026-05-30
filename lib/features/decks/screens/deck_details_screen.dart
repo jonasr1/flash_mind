@@ -126,13 +126,19 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
                   return Card(
                     child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
+                      onTap: () async {
+                        final result = await Navigator.of(context).push<bool>(
                           MaterialPageRoute(
-                            builder: (_) =>
-                                EditFlashcardScreen(flashcard: flashcard),
+                            builder: (_) => EditFlashcardScreen(
+                              deck: widget.deck,
+                              flashcard: flashcard,
+                            ),
                           ),
                         );
+
+                        if (result == true && mounted) {
+                          setState(() {});
+                        }
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(16),

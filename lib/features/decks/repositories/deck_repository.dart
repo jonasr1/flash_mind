@@ -10,5 +10,7 @@ abstract class DeckRepository {
 
   Future<void> deleteFlashcard(Deck deck, Flashcard flashcard);
 
+  Future<void> updateFlashcard(Deck deck, Flashcard flashcard);
+
   Future<void> deleteDeck(Deck deck);
 }
