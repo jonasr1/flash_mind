@@ -50,6 +50,8 @@ class GamificationService {
         combo = 0;
         break;
       case ReviewRating.difficult:
+        // combo unchanged
+        break;
       case ReviewRating.easy:
         combo += 1;
         break;

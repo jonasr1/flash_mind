@@ -18,9 +18,31 @@ class DeckDetailsScreen extends StatefulWidget {
 class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
+  late Deck _deck;
+
+  @override
+  void initState() {
+    super.initState();
+    _deck = widget.deck;
+    titleController = TextEditingController(text: _deck.title);
+    descriptionController = TextEditingController(
+      text: _deck.description,
+    );
+  }
+
+  Future<void> _refreshDeck() async {
+    final decks = await AppScope.of(context).deckService.getDecks();
+    final updatedDeck = decks.firstWhere((d) => d.id == _deck.id);
+    
+    if (!mounted) return;
+    
+    setState(() {
+      _deck = updatedDeck;
+    });
+  }
 
   Future<void> deleteFlashcard(int index) async {
-    final flashcard = widget.deck.flashcards[index];
+    final flashcard = _deck.flashcards[index];
 
     final shouldDelete = await showDialog<bool>(
       context: context,
@@ -47,20 +69,9 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
       deckService: AppScope.of(context).deckService,
     );
 
-    await controller.deleteFlashcard(deck: widget.deck, flashcard: flashcard);
+    await controller.deleteFlashcard(deck: _deck, flashcard: flashcard);
 
-    if (!mounted) return;
-
-    setState(() {});
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    titleController = TextEditingController(text: widget.deck.title);
-    descriptionController = TextEditingController(
-      text: widget.deck.description,
-    );
+    await _refreshDeck();
   }
 
   @override
@@ -80,12 +91,12 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
         onPressed: () async {
           final result = await Navigator.of(context).push<bool>(
             MaterialPageRoute(
-              builder: (_) => CreateFlashcardScreen(deck: widget.deck),
+              builder: (_) => CreateFlashcardScreen(deck: _deck),
             ),
           );
 
           if (result == true && mounted) {
-            setState(() {});
+            await _refreshDeck();
           }
         },
         child: const Icon(Icons.add_rounded),
@@ -120,9 +131,9 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: widget.deck.flashcards.length,
+                itemCount: _deck.flashcards.length,
                 itemBuilder: (context, index) {
-                  final flashcard = widget.deck.flashcards[index];
+                  final flashcard = _deck.flashcards[index];
 
                   return Card(
                     child: InkWell(
@@ -130,14 +141,14 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
                         final result = await Navigator.of(context).push<bool>(
                           MaterialPageRoute(
                             builder: (_) => EditFlashcardScreen(
-                              deck: widget.deck,
+                              deck: _deck,
                               flashcard: flashcard,
                             ),
                           ),
                         );
 
                         if (result == true && mounted) {
-                          setState(() {});
+                          await _refreshDeck();
                         }
                       },
                       child: Padding(

@@ -11,6 +11,26 @@ class UserProgress {
     this.combo = 0,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'totalXp': totalXp,
+      'streakDays': streakDays,
+      'lastStudyDate': lastStudyDate?.toIso8601String(),
+      'combo': combo,
+    };
+  }
+
+  factory UserProgress.fromJson(Map<String, dynamic> json) {
+    return UserProgress(
+      totalXp: json['totalXp'] ?? 0,
+      streakDays: json['streakDays'] ?? 0,
+      lastStudyDate: json['lastStudyDate'] != null
+          ? DateTime.parse(json['lastStudyDate'])
+          : null,
+      combo: json['combo'] ?? 0,
+    );
+  }
+
   int get level => (totalXp ~/ 100) + 1;
 
   int get currentLevelXp => totalXp % 100;

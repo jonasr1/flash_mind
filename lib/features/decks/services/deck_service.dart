@@ -49,6 +49,7 @@ class DeckService {
     );
 
     await _repository.addFlashcard(deck, flashcard);
+    deck.flashcards.add(flashcard);
   }
 
   Future<void> updateFlashcard({
@@ -66,8 +67,9 @@ class DeckService {
   Future<void> deleteFlashcard({
     required Deck deck,
     required Flashcard flashcard,
-  }) {
-    return _repository.deleteFlashcard(deck, flashcard);
+  }) async {
+    await _repository.deleteFlashcard(deck, flashcard);
+    deck.flashcards.remove(flashcard);
   }
 
   Future<void> deleteDeck(Deck deck) {

@@ -1,20 +1,24 @@
 import 'package:flash_mind/features/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/app_scope.dart';
 import 'core/progress/controllers/user_progress_controller.dart';
-import 'core/progress/repositories/in_memory_user_progress_repository.dart';
+import 'core/progress/repositories/local_user_progress_repository.dart';
 import 'core/progress/services/gamification_service.dart';
 import 'core/review/review_service.dart';
-import 'features/decks/repositories/in_memory_deck_repository.dart';
+import 'features/decks/repositories/local_deck_repository.dart';
 import 'features/decks/services/deck_service.dart';
 import 'features/flashcards/services/spaced_repetition_service.dart';
 
-void main() {
-  final deckService = DeckService(repository: InMemoryDeckRepository());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+
+  final deckService = DeckService(repository: LocalDeckRepository(prefs));
 
   final userProgressController = UserProgressController(
-    repository: InMemoryUserProgressRepository(),
+    repository: LocalUserProgressRepository(prefs),
   );
   userProgressController.init();
 
@@ -22,6 +26,7 @@ void main() {
     spacedRepetitionService: SpacedRepetitionService(),
     gamificationService: const GamificationService(),
     userProgressController: userProgressController,
+    deckService: deckService,
   );
 
   runApp(

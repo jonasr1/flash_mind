@@ -36,7 +36,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     return index;
   }
 
-  void reviewCurrentFlashcard(ReviewRating rating) {
+  Future<void> reviewCurrentFlashcard(ReviewRating rating) async {
     final currentDueFlashcards = _getDueFlashcards(DateTime.now());
     if (currentDueFlashcards.isEmpty) return;
 
@@ -45,8 +45,11 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     final currentCard = currentDueFlashcards[safeCurrentIndex];
     var shouldShowSessionCompletedDialog = false;
 
+    await AppScope.of(context).reviewService.reviewFlashcard(widget.deck, currentCard, rating);
+
+    if (!mounted) return;
+
     setState(() {
-      AppScope.of(context).reviewService.reviewFlashcard(currentCard, rating);
       isAnswerVisible = false;
 
       final updatedDueFlashcards = _getDueFlashcards(DateTime.now());
@@ -97,7 +100,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
         _normalizeIndex(currentIndex, dueFlashcards.length);
     final currentFlashcard =
         dueFlashcards.isEmpty ? null : dueFlashcards[safeCurrentIndex];
-    final combo = AppScope.of(context).userProgressController.progress.combo;
+    final progressController = AppScope.of(context).userProgressController;
 
     return Scaffold(
       body: SafeArea(
@@ -110,10 +113,15 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
               const SizedBox(height: 12),
               if (dueFlashcards.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                SessionProgress(
-                  currentIndex: safeCurrentIndex,
-                  totalCards: dueFlashcards.length,
-                  combo: combo,
+                AnimatedBuilder(
+                  animation: progressController,
+                  builder: (context, _) {
+                    return SessionProgress(
+                      currentIndex: safeCurrentIndex,
+                      totalCards: dueFlashcards.length,
+                      combo: progressController.progress.combo,
+                    );
+                  },
                 ),
               ],
               const SizedBox(height: 12),
