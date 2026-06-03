@@ -94,8 +94,6 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Novo baralho', style: theme.textTheme.displaySmall),
-              const SizedBox(height: 4),
               Text(
                 'Organize seus flashcards por assunto ou tema.',
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -122,10 +120,7 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
                           errorText: titleError,
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
-
                       TextField(
                         controller: descriptionController,
                         enabled: !isSaving,

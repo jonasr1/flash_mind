@@ -83,8 +83,6 @@ class _CreateFlashcardScreenState extends State<CreateFlashcardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Novo flashcard', style: theme.textTheme.displaySmall),
-              const SizedBox(height: 4),
               Text(
                 'Adicione um novo cartão ao baralho ${widget.deck.title}',
                 style: theme.textTheme.bodyMedium?.copyWith(

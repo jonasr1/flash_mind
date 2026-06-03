@@ -46,7 +46,9 @@ class _EditFlashcardScreenState extends State<EditFlashcardScreen> {
       deckService: AppScope.of(context).deckService,
     );
 
-    final nextQuestionError = controller.validateQuestion(questionController.text);
+    final nextQuestionError = controller.validateQuestion(
+      questionController.text,
+    );
     final nextAnswerError = controller.validateAnswer(answerController.text);
 
     setState(() {
@@ -79,9 +81,9 @@ class _EditFlashcardScreenState extends State<EditFlashcardScreen> {
         isSaving = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao salvar flashcard')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Erro ao salvar flashcard')));
     }
   }
 
@@ -97,8 +99,6 @@ class _EditFlashcardScreenState extends State<EditFlashcardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Editar flashcard', style: theme.textTheme.displaySmall),
-              const SizedBox(height: 4),
               Text(
                 'Edite as informações do cartão no baralho ${widget.deck.title}',
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -143,7 +143,9 @@ class _EditFlashcardScreenState extends State<EditFlashcardScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: isSaving ? null : () => Navigator.of(context).pop(),
+                      onPressed: isSaving
+                          ? null
+                          : () => Navigator.of(context).pop(),
                       child: const Text('Cancelar'),
                     ),
                   ),
