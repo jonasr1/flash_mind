@@ -3,31 +3,50 @@ class UserProgress {
   final int streakDays;
   final DateTime? lastStudyDate;
   final int combo;
+  final int bestStreak;
+  final int totalStudyDays;
+  final List<DateTime> studyDays;
 
   const UserProgress({
     required this.totalXp,
     required this.streakDays,
     required this.lastStudyDate,
     this.combo = 0,
+    this.bestStreak = 0,
+    this.totalStudyDays = 0,
+    this.studyDays = const [],
   });
+
+  int get currentStreak => streakDays;
 
   Map<String, dynamic> toJson() {
     return {
       'totalXp': totalXp,
+      'currentStreak': streakDays,
       'streakDays': streakDays,
       'lastStudyDate': lastStudyDate?.toIso8601String(),
       'combo': combo,
+      'bestStreak': bestStreak,
+      'totalStudyDays': totalStudyDays,
+      'studyDays': studyDays.map((day) => day.toIso8601String()).toList(),
     };
   }
 
   factory UserProgress.fromJson(Map<String, dynamic> json) {
+    final studyDaysJson = json['studyDays'] as List<dynamic>? ?? [];
+
     return UserProgress(
       totalXp: json['totalXp'] ?? 0,
-      streakDays: json['streakDays'] ?? 0,
+      streakDays: json['currentStreak'] ?? json['streakDays'] ?? 0,
       lastStudyDate: json['lastStudyDate'] != null
           ? DateTime.parse(json['lastStudyDate'])
           : null,
       combo: json['combo'] ?? 0,
+      bestStreak: json['bestStreak'] ?? 0,
+      totalStudyDays: json['totalStudyDays'] ?? studyDaysJson.length,
+      studyDays: studyDaysJson
+          .map((day) => DateTime.parse(day as String))
+          .toList(),
     );
   }
 
@@ -60,12 +79,18 @@ class UserProgress {
     int? streakDays,
     DateTime? lastStudyDate,
     int? combo,
+    int? bestStreak,
+    int? totalStudyDays,
+    List<DateTime>? studyDays,
   }) {
     return UserProgress(
       totalXp: totalXp ?? this.totalXp,
       streakDays: streakDays ?? this.streakDays,
       lastStudyDate: lastStudyDate ?? this.lastStudyDate,
       combo: combo ?? this.combo,
+      bestStreak: bestStreak ?? this.bestStreak,
+      totalStudyDays: totalStudyDays ?? this.totalStudyDays,
+      studyDays: studyDays ?? this.studyDays,
     );
   }
 }

@@ -10,6 +10,7 @@ import 'package:flash_mind/features/home/widgets/header_section.dart';
 import 'package:flash_mind/features/home/widgets/level_card.dart';
 import 'package:flash_mind/features/home/widgets/quote_card.dart';
 import 'package:flash_mind/features/home/models/stats_data.dart';
+import 'package:flash_mind/features/progress/screens/streak_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,7 +33,14 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HeaderSection(actionIcon: Icons.menu, onActionPressed: () {}),
+              HeaderSection(
+                actionIcon: Icons.bar_chart_rounded,
+                onActionPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const StreakScreen()),
+                  );
+                },
+              ),
               const Divider(height: 32, thickness: 1, color: Colors.black26),
               Expanded(
                 child: SingleChildScrollView(
@@ -68,7 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             builder: (context, snapshot) {
                               final stats = StatsData.fromDecks(
                                 decks: snapshot.data ?? [],
-                                streakDays: progressController.progress.streakDays,
+                                streakDays:
+                                    progressController.progress.streakDays,
                                 now: DateTime.now(),
                               );
 

@@ -25,10 +25,14 @@ class GamificationService {
 
     final today = DateTime(now.year, now.month, now.day);
     final last = progress.lastStudyDate;
+    final studyDays = progress.studyDays
+        .map((day) => DateTime(day.year, day.month, day.day))
+        .toList();
 
     int streakDays = progress.streakDays;
     DateTime? lastStudyDate = last;
     int combo = progress.combo;
+    var bestStreak = progress.bestStreak;
 
     if (last != null) {
       final lastDay = DateTime(last.year, last.month, last.day);
@@ -43,6 +47,15 @@ class GamificationService {
       streakDays = 1;
       lastStudyDate = today;
       combo = 0;
+    }
+
+    final hasStudiedToday = studyDays.any((day) => day == today);
+    if (!hasStudiedToday) {
+      studyDays.add(today);
+    }
+
+    if (streakDays > bestStreak) {
+      bestStreak = streakDays;
     }
 
     switch (rating) {
@@ -62,6 +75,9 @@ class GamificationService {
       streakDays: streakDays,
       lastStudyDate: lastStudyDate,
       combo: combo,
+      bestStreak: bestStreak,
+      totalStudyDays: studyDays.length,
+      studyDays: studyDays,
     );
   }
 }

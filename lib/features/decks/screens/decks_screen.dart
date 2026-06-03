@@ -82,12 +82,17 @@ class _DecksScreenState extends State<DecksScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Column(
             children: [
-              ScreenHeader(
-                title: 'Baralhos',
-                actionIcon: Icons.bar_chart_rounded,
-                onActionPressed: () {
-                  // TODO: Implement action
-                },
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                  ),
+                  Text(
+                    "Baralhos",
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                ],
               ),
 
               Divider(
