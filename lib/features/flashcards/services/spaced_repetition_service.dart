@@ -3,6 +3,7 @@ import '../models/review_rating.dart';
 
 class SpacedRepetitionService {
   static const reviewIntervals = [
+    Duration(minutes: 1),
     Duration(minutes: 10),
     Duration(hours: 1),
     Duration(hours: 6),

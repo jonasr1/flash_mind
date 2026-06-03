@@ -50,7 +50,8 @@ class Deck {
   int get totalCards => flashcards.length;
 
   int get reviewedCards {
-    return flashcards.where((card) => card.timesReviewed > 0).length;
+    final now = DateTime.now();
+    return flashcards.where((card) => card.nextReviewAt.isAfter(now)).length;
   }
 
   double get progress {

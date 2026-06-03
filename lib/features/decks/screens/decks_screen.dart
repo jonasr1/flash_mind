@@ -7,6 +7,7 @@ import 'package:flash_mind/features/decks/widgets/deck_list.dart';
 import 'package:flash_mind/features/decks/widgets/decks_summary.dart';
 import 'package:flash_mind/features/decks/widgets/screen_header.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 class DecksScreen extends StatefulWidget {
   const DecksScreen({super.key});
@@ -17,6 +18,25 @@ class DecksScreen extends StatefulWidget {
 
 class _DecksScreenState extends State<DecksScreen> {
   List<Deck> decks = [];
+
+  Timer? refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    refreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
