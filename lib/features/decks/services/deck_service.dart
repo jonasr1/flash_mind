@@ -97,7 +97,7 @@ class DeckService {
     flashcard.question = question.trim();
     flashcard.answer = answer.trim();
 
-    await _repository.updateFlashcard(deck, flashcard);
+    await _repository.updateDeck(deck);
   }
 
   Future<void> updateDeck(Deck deck) {

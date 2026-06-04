@@ -116,6 +116,7 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
   Future<void> deleteFlashcard(int index) async {
     final flashcard = _deck.flashcards[index];
+    final context = this.context;
 
     final shouldDelete = await showDialog<bool>(
       context: context,
@@ -136,7 +137,7 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
     );
 
     if (shouldDelete != true) return;
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     final controller = DeckDetailsController(
       deckService: AppScope.of(context).deckService,
@@ -145,6 +146,11 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
     await controller.deleteFlashcard(deck: _deck, flashcard: flashcard);
 
     await _refreshDeck();
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Flashcard apagado com sucesso')),
+    );
   }
 
   @override
@@ -187,6 +193,10 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
           if (result == true && mounted) {
             await _refreshDeck();
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Flashcard criado com sucesso')),
+            );
           }
         },
         child: const Icon(Icons.add_rounded),
@@ -226,7 +236,7 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _deck.flashcards.length,
-                itemBuilder: (context, index) {
+                itemBuilder: (_, index) {
                   final flashcard = _deck.flashcards[index];
 
                   return Card(
@@ -243,6 +253,12 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
                         if (result == true && mounted) {
                           await _refreshDeck();
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Flashcard editado com sucesso'),
+                            ),
+                          );
                         }
                       },
                       child: Padding(
