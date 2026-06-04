@@ -38,6 +38,42 @@ class DeckService {
     );
   }
 
+  String? validateTitle(String title) {
+    final trimmedTitle = title.trim();
+
+    if (trimmedTitle.isEmpty) {
+      return 'Título é obrigatório';
+    }
+
+    if (trimmedTitle.length > 100) {
+      return 'O título deve ter 100 caracteres ou menos';
+    }
+
+    return null;
+  }
+
+  Future<String?> validateTitleUnique(String title, {String? excludeDeckId}) async {
+    final decks = await getDecks();
+    final trimmedTitle = title.trim().toLowerCase();
+    final exists = decks.any(
+      (deck) =>
+          deck.id != excludeDeckId &&
+          deck.title.trim().toLowerCase() == trimmedTitle,
+    );
+    if (exists) {
+      return 'Já existe um baralho com este título';
+    }
+    return null;
+  }
+
+  String? validateDescription(String description) {
+    if (description.trim().length > 300) {
+      return 'A descrição deve ter 300 caracteres ou menos';
+    }
+
+    return null;
+  }
+
   Future<void> addFlashcard({
     required Deck deck,
     required String question,
@@ -62,6 +98,10 @@ class DeckService {
     flashcard.answer = answer.trim();
 
     await _repository.updateFlashcard(deck, flashcard);
+  }
+
+  Future<void> updateDeck(Deck deck) {
+    return _repository.updateDeck(deck);
   }
 
   Future<void> deleteFlashcard({

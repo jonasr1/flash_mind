@@ -58,4 +58,20 @@ class Deck {
     if (totalCards == 0) return 0;
     return reviewedCards / totalCards;
   }
+
+  Deck copyWith({
+    String? title,
+    String? description,
+    List<Flashcard>? flashcards,
+    DateTime? updatedAt,
+  }) {
+    return Deck(
+      id: id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      flashcards: flashcards ?? this.flashcards,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

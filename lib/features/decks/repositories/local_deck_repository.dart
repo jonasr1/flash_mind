@@ -67,6 +67,16 @@ class LocalDeckRepository implements DeckRepository {
   }
 
   @override
+  Future<void> updateDeck(Deck deck) async {
+    final List<Deck> decks = await getDecks();
+    final index = decks.indexWhere((d) => d.id == deck.id);
+    if (index != -1) {
+      decks[index] = deck;
+      await _saveDecks(decks);
+    }
+  }
+
+  @override
   Future<void> deleteDeck(Deck deck) async {
     final List<Deck> decks = await getDecks();
     decks.removeWhere((d) => d.id == deck.id);

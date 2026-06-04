@@ -20,25 +20,98 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
   late final TextEditingController descriptionController;
   late Deck _deck;
 
+  bool _hasChanges = false;
+  bool _isSaving = false;
+  String? _titleError;
+  String? _descriptionError;
+
   @override
   void initState() {
     super.initState();
     _deck = widget.deck;
     titleController = TextEditingController(text: _deck.title);
-    descriptionController = TextEditingController(
-      text: _deck.description,
-    );
+    descriptionController = TextEditingController(text: _deck.description);
+
+    titleController.addListener(_checkForChanges);
+    descriptionController.addListener(_checkForChanges);
+  }
+
+  void _checkForChanges() {
+    final titleChanged = titleController.text.trim() != _deck.title.trim();
+    final descriptionChanged =
+        descriptionController.text.trim() != _deck.description.trim();
+
+    final hasChanges = titleChanged || descriptionChanged;
+    if (hasChanges != _hasChanges) {
+      setState(() {
+        _hasChanges = hasChanges;
+      });
+    }
   }
 
   Future<void> _refreshDeck() async {
     final decks = await AppScope.of(context).deckService.getDecks();
     final updatedDeck = decks.firstWhere((d) => d.id == _deck.id);
-    
+
     if (!mounted) return;
-    
+
     setState(() {
       _deck = updatedDeck;
+      _hasChanges = false;
+      _titleError = null;
+      _descriptionError = null;
     });
+  }
+
+  Future<void> _saveDeck() async {
+    final controller = DeckDetailsController(
+      deckService: AppScope.of(context).deckService,
+    );
+
+    final title = titleController.text;
+    final description = descriptionController.text;
+
+    setState(() {
+      _titleError = controller.validateTitle(title);
+      _descriptionError = controller.validateDescription(description);
+      _isSaving = true;
+    });
+
+    if (_titleError != null || _descriptionError != null) {
+      setState(() {
+        _isSaving = false;
+      });
+      return;
+    }
+
+    try {
+      await controller.updateDeck(
+        deck: _deck,
+        title: title,
+        description: description,
+      );
+
+      await _refreshDeck();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Baralho editado com sucesso')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        if (e is ArgumentError) {
+          _titleError = e.message;
+        }
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   Future<void> deleteFlashcard(int index) async {
@@ -76,6 +149,8 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
   @override
   void dispose() {
+    titleController.removeListener(_checkForChanges);
+    descriptionController.removeListener(_checkForChanges);
     titleController.dispose();
     descriptionController.dispose();
     super.dispose();
@@ -86,7 +161,22 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalhes do baralho')),
+      appBar: AppBar(
+        title: const Text('Editar baralho'),
+        actions: [
+          if (_hasChanges)
+            TextButton(
+              onPressed: _isSaving ? null : _saveDeck,
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Salvar'),
+            ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.of(context).push<bool>(
@@ -108,19 +198,23 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Título',
                   hintText: 'Ex.: Python',
+                  errorText: _titleError,
                 ),
+                enabled: !_isSaving,
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
                 maxLines: 4,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Descrição',
                   hintText: 'Ex.: Flashcards sobre Python',
+                  errorText: _descriptionError,
                 ),
+                enabled: !_isSaving,
               ),
               const SizedBox(height: 24),
               Align(

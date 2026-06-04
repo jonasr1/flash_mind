@@ -79,6 +79,13 @@ class DeckListItem extends StatelessWidget {
                             context,
                           ).deckService.deleteDeck(deck);
                           if (!context.mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Baralho apagado com sucesso'),
+                            ),
+                          );
+
                           onDeckUpdated?.call();
                         }
                       }
@@ -88,7 +95,7 @@ class DeckListItem extends StatelessWidget {
                         value: 'details',
                         child: ListTile(
                           leading: Icon(Icons.edit_outlined),
-                          title: Text('Detalhes do baralho'),
+                          title: Text('Editar baralho'),
                           contentPadding: EdgeInsets.zero,
                         ),
                       ),

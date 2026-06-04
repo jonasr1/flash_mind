@@ -8,32 +8,15 @@ class CreateDeckController {
     : _deckService = deckService;
 
   String? validateTitle(String title) {
-    final trimmedTitle = title.trim();
-
-    if (trimmedTitle.isEmpty) {
-      return 'Título é obrigatório';
-    }
-
-    if (trimmedTitle.length > 100) {
-      return 'O título deve ter 100 caracteres ou menos';
-    }
-
-    return null;
+    return _deckService.validateTitle(title);
   }
 
   Future<String?> validateTitleUnique(String title) async {
-    if (await _deckService.existsWithTitle(title)) {
-      return 'Já existe um baralho com este título';
-    }
-    return null;
+    return _deckService.validateTitleUnique(title);
   }
 
   String? validateDescription(String description) {
-    if (description.trim().length > 300) {
-      return 'Description must be 300 characters or less';
-    }
-
-    return null;
+    return _deckService.validateDescription(description);
   }
 
   Future<Deck> createDeck({

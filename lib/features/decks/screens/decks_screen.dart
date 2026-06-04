@@ -5,7 +5,6 @@ import 'package:flash_mind/features/decks/screens/deck_details_screen.dart';
 import 'package:flash_mind/features/decks/widgets/create_deck_button.dart';
 import 'package:flash_mind/features/decks/widgets/deck_list.dart';
 import 'package:flash_mind/features/decks/widgets/decks_summary.dart';
-import 'package:flash_mind/features/decks/widgets/screen_header.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -62,6 +61,12 @@ class _DecksScreenState extends State<DecksScreen> {
     if (!mounted) return;
 
     if (createdDeck != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Baralho criado com sucesso')),
+        );
+      }
+
       await Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => DeckDetailsScreen(deck: createdDeck)),
       );
