@@ -1,5 +1,6 @@
 import 'package:flash_mind/features/home/widgets/start_button.dart';
 import 'package:flash_mind/features/home/widgets/stats_section.dart';
+import 'package:flash_mind/features/home/widgets/stats_help_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 import "package:flash_mind/features/home/data/quotes_data.dart";
@@ -63,13 +64,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       const SizedBox(height: 24),
-                      Text(
-                        'Estatísticas',
-                        style: Theme.of(context).textTheme.titleMedium,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Estatísticas',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          IconButton(
+                            onPressed: () => showStatsHelp(context),
+                            icon: const Icon(
+                              Icons.info_outline_rounded,
+                              size: 20,
+                              color: Colors.black54,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       AnimatedBuilder(
-                        animation: progressController,
+                        animation: Listenable.merge([
+                          progressController,
+                          scope.deckService,
+                        ]),
                         builder: (context, _) {
                           return FutureBuilder<List<Deck>>(
                             future: scope.deckService.getDecks(),
@@ -78,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 decks: snapshot.data ?? [],
                                 streakDays:
                                     progressController.progress.streakDays,
+                                reviewsToday:
+                                    progressController.progress.reviewsToday,
                                 now: DateTime.now(),
                               );
 

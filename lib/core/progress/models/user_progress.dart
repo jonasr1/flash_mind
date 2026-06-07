@@ -6,6 +6,7 @@ class UserProgress {
   final int bestStreak;
   final int totalStudyDays;
   final List<DateTime> studyDays;
+  final int reviewsToday;
 
   const UserProgress({
     required this.totalXp,
@@ -15,6 +16,7 @@ class UserProgress {
     this.bestStreak = 0,
     this.totalStudyDays = 0,
     this.studyDays = const [],
+    this.reviewsToday = 0,
   });
 
   int get currentStreak => streakDays;
@@ -29,6 +31,7 @@ class UserProgress {
       'bestStreak': bestStreak,
       'totalStudyDays': totalStudyDays,
       'studyDays': studyDays.map((day) => day.toIso8601String()).toList(),
+      'reviewsToday': reviewsToday,
     };
   }
 
@@ -47,6 +50,7 @@ class UserProgress {
       studyDays: studyDaysJson
           .map((day) => DateTime.parse(day as String))
           .toList(),
+      reviewsToday: json['reviewsToday'] ?? 0,
     );
   }
 
@@ -82,6 +86,7 @@ class UserProgress {
     int? bestStreak,
     int? totalStudyDays,
     List<DateTime>? studyDays,
+    int? reviewsToday,
   }) {
     return UserProgress(
       totalXp: totalXp ?? this.totalXp,
@@ -91,6 +96,7 @@ class UserProgress {
       bestStreak: bestStreak ?? this.bestStreak,
       totalStudyDays: totalStudyDays ?? this.totalStudyDays,
       studyDays: studyDays ?? this.studyDays,
+      reviewsToday: reviewsToday ?? this.reviewsToday,
     );
   }
 }

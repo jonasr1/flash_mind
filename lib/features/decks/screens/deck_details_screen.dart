@@ -95,7 +95,10 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Baralho editado com sucesso')),
+        const SnackBar(
+          content: Text('Baralho editado com sucesso'),
+          duration: Duration(seconds: 2),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -149,7 +152,10 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Flashcard apagado com sucesso')),
+      const SnackBar(
+        content: Text('Flashcard apagado com sucesso'),
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 
@@ -183,117 +189,136 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.of(context).push<bool>(
             MaterialPageRoute(
               builder: (_) => CreateFlashcardScreen(deck: _deck),
             ),
           );
-
           if (result == true && mounted) {
             await _refreshDeck();
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Flashcard criado com sucesso')),
+              const SnackBar(
+                content: Text('Flashcard criado com sucesso'),
+                duration: Duration(seconds: 2),
+              ),
             );
           }
         },
-        child: const Icon(Icons.add_rounded),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Nova carta'),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(
-                  labelText: 'Título',
-                  hintText: 'Ex.: Python',
-                  errorText: _titleError,
-                ),
-                enabled: !_isSaving,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: descriptionController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: 'Descrição',
-                  hintText: 'Ex.: Flashcards sobre Python',
-                  errorText: _descriptionError,
-                ),
-                enabled: !_isSaving,
-              ),
-              const SizedBox(height: 24),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Flashcards', style: textTheme.titleMedium),
-              ),
-              const SizedBox(height: 12),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _deck.flashcards.length,
-                itemBuilder: (_, index) {
-                  final flashcard = _deck.flashcards[index];
+        child: Padding(
+          padding: const EdgeInsets.only(right: 3.0),
+          child: Scrollbar(
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Título',
+                      hintText: 'Ex.: Python',
+                      errorText: _titleError,
+                    ),
+                    enabled: !_isSaving,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      labelText: 'Descrição',
+                      hintText: 'Ex.: Flashcards sobre Python',
+                      errorText: _descriptionError,
+                    ),
+                    enabled: !_isSaving,
+                  ),
+                  const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Flashcards (${_deck.flashcards.length})',
+                      style: textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _deck.flashcards.length,
+                    itemBuilder: (_, index) {
+                      final flashcard = _deck.flashcards[index];
 
-                  return Card(
-                    child: InkWell(
-                      onTap: () async {
-                        final result = await Navigator.of(context).push<bool>(
-                          MaterialPageRoute(
-                            builder: (_) => EditFlashcardScreen(
-                              deck: _deck,
-                              flashcard: flashcard,
+                      return Card(
+                        child: InkWell(
+                          onTap: () async {
+                            final result = await Navigator.of(context)
+                                .push<bool>(
+                                  MaterialPageRoute(
+                                    builder: (_) => EditFlashcardScreen(
+                                      deck: _deck,
+                                      flashcard: flashcard,
+                                    ),
+                                  ),
+                                );
+
+                            if (result == true && mounted) {
+                              await _refreshDeck();
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Flashcard editado com sucesso',
+                                  ),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        flashcard.question,
+                                        style: textTheme.titleMedium,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        flashcard.answer,
+                                        style: textTheme.bodyMedium,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => deleteFlashcard(index),
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        );
-
-                        if (result == true && mounted) {
-                          await _refreshDeck();
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Flashcard editado com sucesso'),
-                            ),
-                          );
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    flashcard.question,
-                                    style: textTheme.titleMedium,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    flashcard.answer,
-                                    style: textTheme.bodyMedium,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => deleteFlashcard(index),
-                              icon: const Icon(Icons.delete_outline_rounded),
-                            ),
-                          ],
                         ),
-                      ),
-                    ),
-                  );
-                },
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

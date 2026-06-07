@@ -82,7 +82,7 @@ void main() {
     expect(progress.totalStudyDays, 8);
   });
 
-  test('same day does not count twice', () {
+  test('same day does not count twice for total study days but increments reviewsToday', () {
     // Arrange
     var progress = newProgress();
 
@@ -95,5 +95,20 @@ void main() {
     expect(progress.currentStreak, 1);
     expect(progress.bestStreak, 1);
     expect(progress.totalStudyDays, 1);
+    expect(progress.reviewsToday, 3);
+  });
+
+  test('reviewsToday resets on a new day', () {
+    // Arrange
+    var progress = newProgress();
+    progress = registerStudyDay(progress, DateTime(2026, 1, 1, 8));
+    progress = registerStudyDay(progress, DateTime(2026, 1, 1, 20));
+    expect(progress.reviewsToday, 2);
+
+    // Act
+    progress = registerStudyDay(progress, DateTime(2026, 1, 2, 8));
+
+    // Assert
+    expect(progress.reviewsToday, 1);
   });
 }

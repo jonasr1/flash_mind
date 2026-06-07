@@ -53,21 +53,43 @@ class StatsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        buildCard(
-          context,
-          icon: Icons.local_fire_department_rounded,
-          title: 'Sequência',
-          value:
-              '${stats.streakDays} ${stats.streakDays == 1 ? 'dia' : 'dias'}',
+        Row(
+          children: [
+            buildCard(
+              context,
+              icon: Icons.local_fire_department_rounded,
+              title: 'Sequência',
+              value:
+                  '${stats.streakDays} ${stats.streakDays == 1 ? 'dia' : 'dias'}',
+            ),
+            const SizedBox(width: 12),
+            buildCard(
+              context,
+              icon: Icons.style,
+              title: 'Cards Estudados',
+              value: '${stats.uniqueCardsReviewedToday}',
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        buildCard(
-          context,
-          icon: Icons.style,
-          title: 'Revisados Hoje',
-          value: '${stats.reviewedToday}',
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            buildCard(
+              context,
+              icon: Icons.loop_rounded,
+              title: 'Revisões Feitas',
+              value: '${stats.reviewsToday}',
+            ),
+            const SizedBox(width: 12),
+            buildCard(
+              context,
+              icon: Icons.alarm_rounded,
+              title: 'Cards Disponíveis',
+              value: '${stats.availableCards}',
+            ),
+          ],
         ),
       ],
     );

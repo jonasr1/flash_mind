@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flash_mind/features/flashcards/models/flashcard.dart';
 
 import '../models/deck.dart';
 import '../repositories/deck_repository.dart';
 
-class DeckService {
+class DeckService extends ChangeNotifier {
   final DeckRepository _repository;
 
   DeckService({required DeckRepository repository}) : _repository = repository;
@@ -27,6 +28,7 @@ class DeckService {
     );
 
     await _repository.createDeck(deck);
+    notifyListeners();
     return deck;
   }
 
@@ -86,6 +88,7 @@ class DeckService {
 
     await _repository.addFlashcard(deck, flashcard);
     deck.flashcards.add(flashcard);
+    notifyListeners();
   }
 
   Future<void> updateFlashcard({
@@ -98,10 +101,12 @@ class DeckService {
     flashcard.answer = answer.trim();
 
     await _repository.updateDeck(deck);
+    notifyListeners();
   }
 
-  Future<void> updateDeck(Deck deck) {
-    return _repository.updateDeck(deck);
+  Future<void> updateDeck(Deck deck) async {
+    await _repository.updateDeck(deck);
+    notifyListeners();
   }
 
   Future<void> deleteFlashcard({
@@ -110,9 +115,11 @@ class DeckService {
   }) async {
     await _repository.deleteFlashcard(deck, flashcard);
     deck.flashcards.remove(flashcard);
+    notifyListeners();
   }
 
-  Future<void> deleteDeck(Deck deck) {
-    return _repository.deleteDeck(deck);
+  Future<void> deleteDeck(Deck deck) async {
+    await _repository.deleteDeck(deck);
+    notifyListeners();
   }
 }

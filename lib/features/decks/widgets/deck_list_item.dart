@@ -83,6 +83,7 @@ class DeckListItem extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Baralho apagado com sucesso'),
+                              duration: Duration(seconds: 2),
                             ),
                           );
 

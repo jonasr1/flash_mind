@@ -33,6 +33,7 @@ class GamificationService {
     DateTime? lastStudyDate = last;
     int combo = progress.combo;
     var bestStreak = progress.bestStreak;
+    int reviewsToday = progress.reviewsToday;
 
     if (last != null) {
       final lastDay = DateTime(last.year, last.month, last.day);
@@ -42,11 +43,15 @@ class GamificationService {
         streakDays = isConsecutive ? streakDays + 1 : 1;
         lastStudyDate = today;
         combo = 0;
+        reviewsToday = 1;
+      } else {
+        reviewsToday++;
       }
     } else {
       streakDays = 1;
       lastStudyDate = today;
       combo = 0;
+      reviewsToday = 1;
     }
 
     final hasStudiedToday = studyDays.any((day) => day == today);
@@ -78,6 +83,7 @@ class GamificationService {
       bestStreak: bestStreak,
       totalStudyDays: studyDays.length,
       studyDays: studyDays,
+      reviewsToday: reviewsToday,
     );
   }
 }
