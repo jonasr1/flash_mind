@@ -45,11 +45,11 @@ class _DecksScreenState extends State<DecksScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            children: [
-              Row(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+              child: Row(
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -61,38 +61,45 @@ class _DecksScreenState extends State<DecksScreen> {
                   ),
                 ],
               ),
-              Divider(
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(
                 height: 24,
                 thickness: 1,
                 color: colorScheme.outlineVariant,
               ),
-              Expanded(
-                child: AnimatedBuilder(
-                  animation: scope.deckService,
-                  builder: (context, _) {
-                    return FutureBuilder<List<Deck>>(
-                      future: scope.deckService.getDecks(),
-                      builder: (context, snapshot) {
-                        final decks = snapshot.data ?? [];
-                        return Scrollbar(
-                          thumbVisibility: true,
-                          child: ListView(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            children: [
-                              DecksSummary(decks: decks),
-                              const SizedBox(height: 24),
-                              DeckList(decks: decks),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+            ),
+            Expanded(
+              child: AnimatedBuilder(
+                animation: scope.deckService,
+                builder: (context, _) {
+                  return FutureBuilder<List<Deck>>(
+                    future: scope.deckService.getDecks(),
+                    builder: (context, snapshot) {
+                      final decks = snapshot.data ?? [];
+                      return Scrollbar(
+                        thumbVisibility: true,
+                        thickness: 6.0,
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                          children: [
+                            DecksSummary(decks: decks),
+                            const SizedBox(height: 24),
+                            DeckList(decks: decks),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
-              CreateDeckButton(onPressed: openCreateDeckScreen),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+              child: CreateDeckButton(onPressed: openCreateDeckScreen),
+            ),
+          ],
         ),
       ),
     );

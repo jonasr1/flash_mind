@@ -29,12 +29,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HeaderSection(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+              child: HeaderSection(
                 actionIcon: Icons.bar_chart_rounded,
                 onActionPressed: () {
                   Navigator.of(context).push(
@@ -42,11 +42,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-              const Divider(height: 32, thickness: 1, color: Colors.black26),
-              Expanded(
-                child: Scrollbar(
-                  thumbVisibility: true,
-                  child: SingleChildScrollView(
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(height: 32, thickness: 1, color: Colors.black26),
+            ),
+            Expanded(
+              child: Scrollbar(
+                thumbVisibility: true,
+                thickness: 6.0,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -102,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       progressController.progress.reviewsToday,
                                   now: DateTime.now(),
                                 );
-                  
+
                                 return StatsSection(stats: stats);
                               },
                             );
@@ -114,9 +121,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const StartButton(),
-            ],
-          ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 20),
+              child: StartButton(),
+            ),
+          ],
         ),
       ),
     );
