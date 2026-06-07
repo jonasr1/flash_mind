@@ -21,6 +21,18 @@ class CreateFlashcardController {
     return null;
   }
 
+  String? validateDuplicate({
+    required Deck deck,
+    required String question,
+    required String answer,
+  }) {
+    return _deckService.validateFlashcardUnique(
+      deck: deck,
+      question: question,
+      answer: answer,
+    );
+  }
+
   Future<void> createFlashcard({
     required Deck deck,
     required String question,
@@ -28,8 +40,13 @@ class CreateFlashcardController {
   }) async {
     final questionError = validateQuestion(question);
     final answerError = validateAnswer(answer);
+    final duplicateError = validateDuplicate(
+      deck: deck,
+      question: question,
+      answer: answer,
+    );
 
-    if (questionError != null || answerError != null) {
+    if (questionError != null || answerError != null || duplicateError != null) {
       throw ArgumentError('Invalid flashcard data');
     }
 

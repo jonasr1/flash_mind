@@ -21,12 +21,12 @@ class InMemoryDeckRepository implements DeckRepository {
 
   @override
   Future<void> deleteFlashcard(Deck deck, Flashcard flashcard) async {
-    deck.flashcards.remove(flashcard);
+    deck.flashcards.removeWhere((f) => f.id == flashcard.id);
   }
 
   @override
   Future<void> updateFlashcard(Deck deck, Flashcard flashcard) async {
-    final index = deck.flashcards.indexOf(flashcard);
+    final index = deck.flashcards.indexWhere((f) => f.id == flashcard.id);
     if (index != -1) {
       deck.flashcards[index] = flashcard;
     }

@@ -33,15 +33,27 @@ class _CreateFlashcardScreenState extends State<CreateFlashcardScreen> {
       deckService: AppScope.of(context).deckService,
     );
 
-    final nextQuestionError = controller.validateQuestion(questionController.text);
+    final nextQuestionError =
+        controller.validateQuestion(questionController.text);
     final nextAnswerError = controller.validateAnswer(answerController.text);
 
+    String? nextDuplicateError;
+    if (nextQuestionError == null && nextAnswerError == null) {
+      nextDuplicateError = controller.validateDuplicate(
+        deck: widget.deck,
+        question: questionController.text,
+        answer: answerController.text,
+      );
+    }
+
     setState(() {
-      questionError = nextQuestionError;
+      questionError = nextQuestionError ?? nextDuplicateError;
       answerError = nextAnswerError;
     });
 
-    if (nextQuestionError != null || nextAnswerError != null) {
+    if (nextQuestionError != null ||
+        nextAnswerError != null ||
+        nextDuplicateError != null) {
       return;
     }
 

@@ -76,6 +76,29 @@ class DeckService extends ChangeNotifier {
     return null;
   }
 
+  String? validateFlashcardUnique({
+    required Deck deck,
+    required String question,
+    required String answer,
+    String? excludeId,
+  }) {
+    final trimmedQuestion = question.trim().toLowerCase();
+    final trimmedAnswer = answer.trim().toLowerCase();
+
+    final exists = deck.flashcards.any((f) {
+      if (excludeId != null && f.id == excludeId) return false;
+
+      return f.question.trim().toLowerCase() == trimmedQuestion &&
+          f.answer.trim().toLowerCase() == trimmedAnswer;
+    });
+
+    if (exists) {
+      return 'Este flashcard já existe neste baralho.';
+    }
+
+    return null;
+  }
+
   Future<void> addFlashcard({
     required Deck deck,
     required String question,

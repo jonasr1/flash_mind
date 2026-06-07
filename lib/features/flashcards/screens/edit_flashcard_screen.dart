@@ -51,12 +51,24 @@ class _EditFlashcardScreenState extends State<EditFlashcardScreen> {
     );
     final nextAnswerError = controller.validateAnswer(answerController.text);
 
+    String? nextDuplicateError;
+    if (nextQuestionError == null && nextAnswerError == null) {
+      nextDuplicateError = controller.validateDuplicate(
+        deck: widget.deck,
+        question: questionController.text,
+        answer: answerController.text,
+        excludeId: widget.flashcard.id,
+      );
+    }
+
     setState(() {
-      questionError = nextQuestionError;
+      questionError = nextQuestionError ?? nextDuplicateError;
       answerError = nextAnswerError;
     });
 
-    if (nextQuestionError != null || nextAnswerError != null) {
+    if (nextQuestionError != null ||
+        nextAnswerError != null ||
+        nextDuplicateError != null) {
       return;
     }
 

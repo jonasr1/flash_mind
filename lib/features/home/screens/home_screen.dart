@@ -44,70 +44,73 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Divider(height: 32, thickness: 1, color: Colors.black26),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      QuoteCard(quote: getDailyQuote()),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Seu Progresso',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      AnimatedBuilder(
-                        animation: progressController,
-                        builder: (context, _) {
-                          return LevelCard(
-                            progress: progressController.progress,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Estatísticas',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          IconButton(
-                            onPressed: () => showStatsHelp(context),
-                            icon: const Icon(
-                              Icons.info_outline_rounded,
-                              size: 20,
-                              color: Colors.black54,
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        QuoteCard(quote: getDailyQuote()),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Seu Progresso',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        AnimatedBuilder(
+                          animation: progressController,
+                          builder: (context, _) {
+                            return LevelCard(
+                              progress: progressController.progress,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Estatísticas',
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      AnimatedBuilder(
-                        animation: Listenable.merge([
-                          progressController,
-                          scope.deckService,
-                        ]),
-                        builder: (context, _) {
-                          return FutureBuilder<List<Deck>>(
-                            future: scope.deckService.getDecks(),
-                            builder: (context, snapshot) {
-                              final stats = StatsData.fromDecks(
-                                decks: snapshot.data ?? [],
-                                streakDays:
-                                    progressController.progress.streakDays,
-                                reviewsToday:
-                                    progressController.progress.reviewsToday,
-                                now: DateTime.now(),
-                              );
-
-                              return StatsSection(stats: stats);
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 32),
-                    ],
+                            IconButton(
+                              onPressed: () => showStatsHelp(context),
+                              icon: const Icon(
+                                Icons.info_outline_rounded,
+                                size: 20,
+                                color: Colors.black54,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        AnimatedBuilder(
+                          animation: Listenable.merge([
+                            progressController,
+                            scope.deckService,
+                          ]),
+                          builder: (context, _) {
+                            return FutureBuilder<List<Deck>>(
+                              future: scope.deckService.getDecks(),
+                              builder: (context, snapshot) {
+                                final stats = StatsData.fromDecks(
+                                  decks: snapshot.data ?? [],
+                                  streakDays:
+                                      progressController.progress.streakDays,
+                                  reviewsToday:
+                                      progressController.progress.reviewsToday,
+                                  now: DateTime.now(),
+                                );
+                  
+                                return StatsSection(stats: stats);
+                              },
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
                   ),
                 ),
               ),

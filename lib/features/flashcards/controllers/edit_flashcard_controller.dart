@@ -22,6 +22,20 @@ class EditFlashcardController {
     return null;
   }
 
+  String? validateDuplicate({
+    required Deck deck,
+    required String question,
+    required String answer,
+    required String excludeId,
+  }) {
+    return _deckService.validateFlashcardUnique(
+      deck: deck,
+      question: question,
+      answer: answer,
+      excludeId: excludeId,
+    );
+  }
+
   Future<void> updateFlashcard({
     required Deck deck,
     required Flashcard flashcard,
@@ -30,8 +44,14 @@ class EditFlashcardController {
   }) async {
     final questionError = validateQuestion(question);
     final answerError = validateAnswer(answer);
+    final duplicateError = validateDuplicate(
+      deck: deck,
+      question: question,
+      answer: answer,
+      excludeId: flashcard.id,
+    );
 
-    if (questionError != null || answerError != null) {
+    if (questionError != null || answerError != null || duplicateError != null) {
       throw ArgumentError('Invalid flashcard data');
     }
 

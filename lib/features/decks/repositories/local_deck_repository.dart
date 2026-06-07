@@ -46,8 +46,7 @@ class LocalDeckRepository implements DeckRepository {
     final List<Deck> decks = await getDecks();
     final deckIndex = decks.indexWhere((d) => d.id == deck.id);
     if (deckIndex != -1) {
-      decks[deckIndex].flashcards.removeWhere((f) => 
-          f.question == flashcard.question && f.answer == flashcard.answer);
+      decks[deckIndex].flashcards.removeWhere((f) => f.id == flashcard.id);
       await _saveDecks(decks);
     }
   }
@@ -57,8 +56,8 @@ class LocalDeckRepository implements DeckRepository {
     final List<Deck> decks = await getDecks();
     final deckIndex = decks.indexWhere((d) => d.id == deck.id);
     if (deckIndex != -1) {
-      final cardIndex = decks[deckIndex].flashcards.indexWhere((f) => 
-          f.question == flashcard.question && f.answer == flashcard.answer);
+      final cardIndex =
+          decks[deckIndex].flashcards.indexWhere((f) => f.id == flashcard.id);
       if (cardIndex != -1) {
         decks[deckIndex].flashcards[cardIndex] = flashcard;
         await _saveDecks(decks);
