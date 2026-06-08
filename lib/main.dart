@@ -10,9 +10,12 @@ import 'core/review/review_service.dart';
 import 'features/decks/repositories/local_deck_repository.dart';
 import 'features/decks/services/deck_service.dart';
 import 'features/flashcards/services/spaced_repetition_service.dart';
+import 'package:flutter/services.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
   final prefs = await SharedPreferences.getInstance();
 
   final deckService = DeckService(repository: LocalDeckRepository(prefs));
