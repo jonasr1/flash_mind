@@ -58,7 +58,10 @@ class UserProgress {
 
   int get currentLevelXp => totalXp % 100;
 
-  int get xpForNextLevel => 100 - currentLevelXp;
+  int get xpForNextLevel {
+    final requiredXp = 100 + ((level - 1) * 50);
+    return requiredXp - currentLevelXp;
+  }
 
   double get levelProgress => currentLevelXp / 100;
 
