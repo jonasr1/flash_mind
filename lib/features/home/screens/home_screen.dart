@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: Scrollbar(
                 thumbVisibility: true,
-                thickness: 6.0,
+                thickness: 5.0,
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -82,10 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             IconButton(
                               onPressed: () => showStatsHelp(context),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.info_outline_rounded,
                                 size: 20,
-                                color: Colors.black54,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                               visualDensity: VisualDensity.compact,
                             ),

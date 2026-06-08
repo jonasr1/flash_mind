@@ -213,9 +213,14 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
       body: SafeArea(
         child: Scrollbar(
           thumbVisibility: true,
-          thickness: 6,
+          thickness: 5,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            padding: const EdgeInsets.only(
+              left: 16,
+              top: 20,
+              right: 16,
+              bottom: 80,
+            ),
             child: Column(
               children: [
                 TextField(

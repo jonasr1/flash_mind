@@ -80,7 +80,7 @@ class _DecksScreenState extends State<DecksScreen> {
                       final decks = snapshot.data ?? [];
                       return Scrollbar(
                         thumbVisibility: true,
-                        thickness: 6.0,
+                        thickness: 5.0,
                         child: ListView(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                           children: [
