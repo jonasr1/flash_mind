@@ -2,23 +2,31 @@ import 'package:flutter/material.dart';
 
 class SessionHeader extends StatelessWidget {
   final String deckTitle;
-  const SessionHeader({super.key, required this.deckTitle});
+
+  const SessionHeader({
+    super.key,
+    required this.deckTitle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
+    return Row(
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+        IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+        ),
+        Expanded(
+          child: Text(
+            'Baralho: $deckTitle',
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
-        Text(
-          'Baralho: $deckTitle',
-          style: Theme.of(context).textTheme.titleMedium,
+        const SizedBox(
+          width: 48,
         ),
       ],
     );

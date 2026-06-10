@@ -35,7 +35,6 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   bool isAnswerVisible = false;
   int currentIndex = 0;
   FlashcardAchievement? currentAchievement;
-  Timer? achievementTimer;
   final List<XpGainData> _xpGains = [];
 
   List<Flashcard> _getDueFlashcards(DateTime now) {
@@ -51,23 +50,9 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     return index;
   }
 
-  @override
-  void dispose() {
-    achievementTimer?.cancel();
-    super.dispose();
-  }
-
   void _showAchievement(FlashcardAchievement achievement) {
-    achievementTimer?.cancel();
     setState(() {
       currentAchievement = achievement;
-    });
-    achievementTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          currentAchievement = null;
-        });
-      }
     });
   }
 
@@ -186,9 +171,9 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     );
   }
 
-  void showAnswer() {
+  void toggleAnswer() {
     setState(() {
-      isAnswerVisible = true;
+      isAnswerVisible = !isAnswerVisible;
     });
   }
 
@@ -232,10 +217,11 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                     child: dueFlashcards.isEmpty
                         ? const EmptyReviewState()
                         : FlashcardView(
-                            question: currentFlashcard!.question,
+                            key: ValueKey(currentFlashcard!.id),
+                            question: currentFlashcard.question,
                             answer: currentFlashcard.answer,
                             isAnswerVisible: isAnswerVisible,
-                            onTap: showAnswer,
+                            onTap: toggleAnswer,
                           ),
                   ),
                   if (isAnswerVisible && dueFlashcards.isNotEmpty)
@@ -254,7 +240,6 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                     setState(() {
                       currentAchievement = null;
                     });
-                    achievementTimer?.cancel();
                   },
                 ),
               ),
