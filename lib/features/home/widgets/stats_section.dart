@@ -17,7 +17,11 @@ class StatsSection extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Expanded(
-      child: Card(
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
           child: Column(
@@ -64,7 +68,7 @@ class StatsSection extends StatelessWidget {
               value:
                   '${stats.streakDays} ${stats.streakDays == 1 ? 'dia' : 'dias'}',
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             buildCard(
               context,
               icon: Icons.style,
@@ -73,7 +77,7 @@ class StatsSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         Row(
           children: [
             buildCard(
@@ -82,7 +86,7 @@ class StatsSection extends StatelessWidget {
               title: 'Revisões Feitas',
               value: '${stats.reviewsToday}',
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             buildCard(
               context,
               icon: Icons.alarm_rounded,

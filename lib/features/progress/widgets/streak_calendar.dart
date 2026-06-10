@@ -13,20 +13,6 @@ class StreakCalendar extends StatelessWidget {
   });
 
   static const _weekdays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-  static const _months = [
-    'Janeiro',
-    'Fevereiro',
-    'Março',
-    'Abril',
-    'Maio',
-    'Junho',
-    'Julho',
-    'Agosto',
-    'Setembro',
-    'Outubro',
-    'Novembro',
-    'Dezembro',
-  ];
 
   bool isStudyDay(DateTime day) {
     final normalizedDay = DateTime(day.year, day.month, day.day);
@@ -37,7 +23,6 @@ class StreakCalendar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final monthTitle = '${_months[month.month - 1]} ${month.year}';
 
     return Card(
       child: Padding(
@@ -45,8 +30,6 @@ class StreakCalendar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(monthTitle, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 16),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),

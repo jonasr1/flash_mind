@@ -5,6 +5,21 @@ class StreakController {
 
   const StreakController({required this.progress});
 
+  static const monthNames = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
+  ];
+
   int get currentStreak => progress.currentStreak;
 
   int get bestStreak => progress.bestStreak;
@@ -15,6 +30,12 @@ class StreakController {
     return progress.studyDays
         .map((day) => DateTime(day.year, day.month, day.day))
         .toSet();
+  }
+
+  int studyDaysCountInMonth(DateTime month) {
+    return studyDays.where((d) {
+      return d.year == month.year && d.month == month.month;
+    }).length;
   }
 
   String get level {

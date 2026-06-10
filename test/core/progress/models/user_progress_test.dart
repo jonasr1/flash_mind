@@ -7,22 +7,34 @@ void main() {
       expect(const UserProgress(totalXp: 0, streakDays: 0, lastStudyDate: null).level, 1);
       expect(const UserProgress(totalXp: 99, streakDays: 0, lastStudyDate: null).level, 1);
       expect(const UserProgress(totalXp: 100, streakDays: 0, lastStudyDate: null).level, 2);
+      expect(const UserProgress(totalXp: 249, streakDays: 0, lastStudyDate: null).level, 2);
       expect(const UserProgress(totalXp: 250, streakDays: 0, lastStudyDate: null).level, 3);
+      expect(const UserProgress(totalXp: 449, streakDays: 0, lastStudyDate: null).level, 3);
+      expect(const UserProgress(totalXp: 450, streakDays: 0, lastStudyDate: null).level, 4);
+      expect(const UserProgress(totalXp: 699, streakDays: 0, lastStudyDate: null).level, 4);
+      expect(const UserProgress(totalXp: 700, streakDays: 0, lastStudyDate: null).level, 5);
     });
 
     test('calculates level progress and XP for next level', () {
-      const progress = UserProgress(totalXp: 150, streakDays: 0, lastStudyDate: null);
+      // Example: totalXp = 320
+      // level = 3 (Start at 250)
+      // currentLevelXp = 320 - 250 = 70
+      // xpRequiredForLevel(3) = 100 + (3-1)*50 = 200
+      // xpForNextLevel = 200 - 70 = 130
+      // levelProgress = 70 / 200 = 0.35
+      const progress = UserProgress(totalXp: 320, streakDays: 0, lastStudyDate: null);
       
-      expect(progress.currentLevelXp, 50);
-      expect(progress.xpForNextLevel, 50);
-      expect(progress.levelProgress, 0.5);
+      expect(progress.level, 3);
+      expect(progress.currentLevelXp, 70);
+      expect(progress.xpForNextLevel, 130);
+      expect(progress.levelProgress, 0.35);
     });
 
     test('returns correct title based on level', () {
       expect(const UserProgress(totalXp: 0, streakDays: 0, lastStudyDate: null).title, 'Iniciante'); // Level 1
       expect(const UserProgress(totalXp: 100, streakDays: 0, lastStudyDate: null).title, 'Aprendiz'); // Level 2
-      expect(const UserProgress(totalXp: 400, streakDays: 0, lastStudyDate: null).title, 'Desbravador'); // Level 5
-      expect(const UserProgress(totalXp: 900, streakDays: 0, lastStudyDate: null).title, 'Mestre'); // Level 10
+      expect(const UserProgress(totalXp: 700, streakDays: 0, lastStudyDate: null).title, 'Desbravador'); // Level 5
+      expect(const UserProgress(totalXp: 2700, streakDays: 0, lastStudyDate: null).title, 'Mestre'); // Level 10
     });
 
     test('toJson and fromJson work correctly', () {

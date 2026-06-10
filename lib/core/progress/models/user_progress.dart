@@ -54,16 +54,34 @@ class UserProgress {
     );
   }
 
-  int get level => (totalXp ~/ 100) + 1;
-
-  int get currentLevelXp => totalXp % 100;
-
-  int get xpForNextLevel {
-    final requiredXp = 100 + ((level - 1) * 50);
-    return requiredXp - currentLevelXp;
+  int get level {
+    int l = 1;
+    while (totalXp >= totalXpRequiredForLevel(l + 1)) {
+      l++;
+    }
+    return l;
   }
 
-  double get levelProgress => currentLevelXp / 100;
+  int get currentLevelXp => totalXp - totalXpRequiredForLevel(level);
+
+  int get xpForNextLevel {
+    return xpRequiredForLevel(level) - currentLevelXp;
+  }
+
+  double get levelProgress => currentLevelXp / xpRequiredForLevel(level);
+
+  // Helper methods for XP curve
+  static int xpRequiredForLevel(int level) => 100 + ((level - 1) * 50);
+
+  static int totalXpRequiredForLevel(int level) {
+    if (level <= 1) return 0;
+    // Sum of arithmetic progression: (n/2)(2a + (n-1)d)
+    // where n = level - 1, a = 100, d = 50
+    // total = ((level-1)/2) * (200 + (level-2)*50)
+    // total = (level-1) * (100 + (level-2)*25)
+    // Example Level 3: (2) * (100 + (1)*25) = 2 * 125 = 250. Correct.
+    return (level - 1) * (100 + (level - 2) * 25);
+  }
 
   // Backwards-compatible alias for UI widgets.
   double get progress => levelProgress;
