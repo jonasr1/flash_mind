@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flash_mind/features/home/widgets/start_button.dart';
 import 'package:flash_mind/features/home/widgets/stats_section.dart';
 import 'package:flash_mind/features/home/widgets/stats_help_bottom_sheet.dart';
@@ -6,7 +7,6 @@ import 'package:flutter/material.dart';
 import "package:flash_mind/features/home/data/quotes_data.dart";
 
 import 'package:flash_mind/core/app_scope.dart';
-import 'package:flash_mind/features/decks/models/deck.dart';
 import 'package:flash_mind/features/home/widgets/header_section.dart';
 import 'package:flash_mind/features/home/widgets/level_card.dart';
 import 'package:flash_mind/features/home/widgets/quote_card.dart';
@@ -21,6 +21,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final scope = AppScope.of(context);
@@ -85,7 +103,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               icon: Icon(
                                 Icons.info_outline_rounded,
                                 size: 20,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                               visualDensity: VisualDensity.compact,
                             ),
@@ -98,21 +118,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             scope.deckService,
                           ]),
                           builder: (context, _) {
-                            return FutureBuilder<List<Deck>>(
-                              future: scope.deckService.getDecks(),
-                              builder: (context, snapshot) {
-                                final stats = StatsData.fromDecks(
-                                  decks: snapshot.data ?? [],
-                                  streakDays:
-                                      progressController.progress.streakDays,
-                                  reviewsToday:
-                                      progressController.progress.reviewsToday,
-                                  now: DateTime.now(),
-                                );
-
-                                return StatsSection(stats: stats);
-                              },
+                            final stats = StatsData.fromDecks(
+                              decks: scope.deckService.decks,
+                              streakDays:
+                                  progressController.progress.streakDays,
+                              reviewsToday:
+                                  progressController.progress.reviewsToday,
+                              now: DateTime.now(),
                             );
+
+                            return StatsSection(stats: stats);
                           },
                         ),
                         const SizedBox(height: 32),

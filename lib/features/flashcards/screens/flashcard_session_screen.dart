@@ -37,6 +37,8 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   FlashcardAchievement? currentAchievement;
   final List<XpGainData> _xpGains = [];
 
+  bool _isProcessingReview = false;
+
   List<Flashcard> _getDueFlashcards(DateTime now) {
     return widget.deck.flashcards
         .where((card) => card.nextReviewAt.isBefore(now))
@@ -57,11 +59,15 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   }
 
   Future<void> reviewCurrentFlashcard(ReviewRating rating) async {
+    if (_isProcessingReview) return;
+
     final currentDueFlashcards = _getDueFlashcards(DateTime.now());
     if (currentDueFlashcards.isEmpty) return;
 
-    final safeCurrentIndex =
-        _normalizeIndex(currentIndex, currentDueFlashcards.length);
+    final safeCurrentIndex = _normalizeIndex(
+      currentIndex,
+      currentDueFlashcards.length,
+    );
     final currentCard = currentDueFlashcards[safeCurrentIndex];
     var shouldShowSessionCompletedDialog = false;
 
@@ -73,78 +79,94 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     final xpGained = gamificationService.xpForRating(rating);
 
     setState(() {
-      _xpGains.add(XpGainData(UniqueKey(), xpGained));
-    });
-
-    await AppScope.of(context).reviewService.reviewFlashcard(widget.deck, currentCard, rating);
-
-    if (!mounted) return;
-
-    final newProgress = progressController.progress;
-
-    // 1. Operational Feedback (SnackBar)
-    final nextReviewMessage = formatNextReview(currentCard.nextReviewAt);
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '✓ Revisão registrada\nPróxima revisão $nextReviewMessage',
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    // 2. Achievement Feedback (Banner)
-    FlashcardAchievement? achievement;
-
-    if (newProgress.title != oldProgress.title) {
-      achievement = FlashcardAchievement(
-        type: AchievementType.rank,
-        message: '🏅 Novo rank desbloqueado: ${newProgress.title}',
-      );
-    } else if (newProgress.level > oldProgress.level) {
-      achievement = FlashcardAchievement(
-        type: AchievementType.level,
-        message: '⭐ Nível ${newProgress.level} alcançado',
-      );
-    } else if (newProgress.bestStreak > oldProgress.bestStreak) {
-      final daysLabel = newProgress.bestStreak == 1 ? 'dia' : 'dias';
-      achievement = FlashcardAchievement(
-        type: AchievementType.bestStreak,
-        message: '🏆 Nova melhor sequência: ${newProgress.bestStreak} $daysLabel',
-      );
-    } else if (newProgress.streakDays > oldProgress.streakDays) {
-      final daysLabel = newProgress.streakDays == 1 ? 'dia' : 'dias';
-      achievement = FlashcardAchievement(
-        type: AchievementType.streak,
-        message: '🔥 Ofensiva: ${newProgress.streakDays} $daysLabel',
-      );
-    } else if (newProgress.combo > oldProgress.combo) {
-      final milestones = [5, 10, 25, 50, 100, 250, 500];
-      if (milestones.contains(newProgress.combo)) {
-        achievement = FlashcardAchievement(
-          type: AchievementType.combo,
-          message: '🔥 Combo x${newProgress.combo}',
-        );
-      }
-    }
-
-    if (achievement != null) {
-      _showAchievement(achievement);
-    }
-
-    setState(() {
+      _isProcessingReview = true;
       isAnswerVisible = false;
-
-      final updatedDueFlashcards = _getDueFlashcards(DateTime.now());
-      shouldShowSessionCompletedDialog = updatedDueFlashcards.isEmpty;
-
-      currentIndex =
-          _normalizeIndex(safeCurrentIndex, updatedDueFlashcards.length);
     });
 
-    if (shouldShowSessionCompletedDialog) {
-      showSessionCompletedDialog();
+    try {
+      await AppScope.of(
+        context,
+      ).reviewService.reviewFlashcard(widget.deck, currentCard, rating);
+
+      if (!mounted) return;
+
+      setState(() {
+        _xpGains.add(XpGainData(UniqueKey(), xpGained));
+      });
+
+      final newProgress = progressController.progress;
+
+      // 1. Operational Feedback (SnackBar)
+      final nextReviewMessage = formatNextReview(currentCard.nextReviewAt);
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '✓ Revisão registrada\nPróxima revisão $nextReviewMessage',
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // 2. Achievement Feedback (Banner)
+      FlashcardAchievement? achievement;
+
+      if (newProgress.title != oldProgress.title) {
+        achievement = FlashcardAchievement(
+          type: AchievementType.rank,
+          message: '🏅 Novo rank desbloqueado: ${newProgress.title}',
+        );
+      } else if (newProgress.level > oldProgress.level) {
+        achievement = FlashcardAchievement(
+          type: AchievementType.level,
+          message: '⭐ Nível ${newProgress.level} alcançado',
+        );
+      } else if (newProgress.bestStreak > oldProgress.bestStreak) {
+        final daysLabel = newProgress.bestStreak == 1 ? 'dia' : 'dias';
+        achievement = FlashcardAchievement(
+          type: AchievementType.bestStreak,
+          message:
+              '🏆 Nova melhor sequência: ${newProgress.bestStreak} $daysLabel',
+        );
+      } else if (newProgress.streakDays > oldProgress.streakDays) {
+        final daysLabel = newProgress.streakDays == 1 ? 'dia' : 'dias';
+        achievement = FlashcardAchievement(
+          type: AchievementType.streak,
+          message: '🔥 Ofensiva: ${newProgress.streakDays} $daysLabel',
+        );
+      } else if (newProgress.combo > oldProgress.combo) {
+        final milestones = [5, 10, 25, 50, 100, 250, 500];
+        if (milestones.contains(newProgress.combo)) {
+          achievement = FlashcardAchievement(
+            type: AchievementType.combo,
+            message: '🔥 Combo x${newProgress.combo}',
+          );
+        }
+      }
+
+      if (achievement != null) {
+        _showAchievement(achievement);
+      }
+
+      setState(() {
+        final updatedDueFlashcards = _getDueFlashcards(DateTime.now());
+        shouldShowSessionCompletedDialog = updatedDueFlashcards.isEmpty;
+
+        currentIndex = _normalizeIndex(
+          safeCurrentIndex,
+          updatedDueFlashcards.length,
+        );
+      });
+
+      if (shouldShowSessionCompletedDialog) {
+        showSessionCompletedDialog();
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingReview = false;
+        });
+      }
     }
   }
 
@@ -160,8 +182,11 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // dialog
+
+                if (mounted) {
+                  Navigator.of(this.context).pop();
+                }
               },
               child: const Text('Voltar'),
             ),
@@ -172,6 +197,8 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   }
 
   void toggleAnswer() {
+    if (_isProcessingReview) return;
+
     setState(() {
       isAnswerVisible = !isAnswerVisible;
     });
@@ -180,10 +207,13 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   @override
   Widget build(BuildContext context) {
     final dueFlashcards = _getDueFlashcards(DateTime.now());
-    final safeCurrentIndex =
-        _normalizeIndex(currentIndex, dueFlashcards.length);
-    final currentFlashcard =
-        dueFlashcards.isEmpty ? null : dueFlashcards[safeCurrentIndex];
+    final safeCurrentIndex = _normalizeIndex(
+      currentIndex,
+      dueFlashcards.length,
+    );
+    final currentFlashcard = dueFlashcards.isEmpty
+        ? null
+        : dueFlashcards[safeCurrentIndex];
     final progressController = AppScope.of(context).userProgressController;
 
     return Scaffold(
@@ -224,7 +254,9 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                             onTap: toggleAnswer,
                           ),
                   ),
-                  if (isAnswerVisible && dueFlashcards.isNotEmpty)
+                  if (isAnswerVisible &&
+                      dueFlashcards.isNotEmpty &&
+                      !_isProcessingReview)
                     AnswerButtons(onSelected: reviewCurrentFlashcard),
                 ],
               ),
@@ -243,22 +275,25 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                   },
                 ),
               ),
-            ..._xpGains.map((gain) => Positioned(
-                  top: MediaQuery.of(context).size.height * 0.4,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: XpGainLabel(
-                      key: gain.key,
-                      xp: gain.xp,
-                      onFinished: () {
-                        setState(() {
-                          _xpGains.removeWhere((g) => g.key == gain.key);
-                        });
-                      },
-                    ),
+            ..._xpGains.map(
+              (gain) => Positioned(
+                top: MediaQuery.of(context).size.height * 0.4,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: XpGainLabel(
+                    key: gain.key,
+                    xp: gain.xp,
+                    onFinished: () {
+                      if (!mounted) return;
+                      setState(() {
+                        _xpGains.removeWhere((g) => g.key == gain.key);
+                      });
+                    },
                   ),
-                )),
+                ),
+              ),
+            ),
           ],
         ),
       ),

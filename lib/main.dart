@@ -19,11 +19,12 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
 
   final deckService = DeckService(repository: LocalDeckRepository(prefs));
+  await deckService.init();
 
   final userProgressController = UserProgressController(
     repository: LocalUserProgressRepository(prefs),
   );
-  userProgressController.init();
+  await userProgressController.init();
 
   final reviewService = ReviewService(
     spacedRepetitionService: SpacedRepetitionService(),

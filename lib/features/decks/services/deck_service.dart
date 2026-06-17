@@ -6,11 +6,26 @@ import '../repositories/deck_repository.dart';
 
 class DeckService extends ChangeNotifier {
   final DeckRepository _repository;
+  List<Deck> _decks = [];
+  bool _isInitialized = false;
 
   DeckService({required DeckRepository repository}) : _repository = repository;
 
-  Future<List<Deck>> getDecks() {
-    return _repository.getDecks();
+  Future<void> init() async {
+    _decks = await _repository.getDecks();
+    _isInitialized = true;
+    notifyListeners();
+  }
+
+  List<Deck> get decks {
+    return List.unmodifiable(_decks);
+  }
+
+  Future<List<Deck>> getDecks() async {
+    if (!_isInitialized) {
+      await init();
+    }
+    return _decks;
   }
 
   Future<Deck> createDeck({
@@ -28,14 +43,19 @@ class DeckService extends ChangeNotifier {
     );
 
     await _repository.createDeck(deck);
+    if (!_isInitialized) {
+      await init();
+    } else {
+      _decks.add(deck);
+    }
     notifyListeners();
     return deck;
   }
 
   Future<bool> existsWithTitle(String title) async {
-    final decks = await getDecks();
+    final currentDecks = await getDecks();
     final trimmedTitle = title.trim().toLowerCase();
-    return decks.any(
+    return currentDecks.any(
       (deck) => deck.title.trim().toLowerCase() == trimmedTitle,
     );
   }
@@ -55,9 +75,9 @@ class DeckService extends ChangeNotifier {
   }
 
   Future<String?> validateTitleUnique(String title, {String? excludeDeckId}) async {
-    final decks = await getDecks();
+    final currentDecks = await getDecks();
     final trimmedTitle = title.trim().toLowerCase();
-    final exists = decks.any(
+    final exists = currentDecks.any(
       (deck) =>
           deck.id != excludeDeckId &&
           deck.title.trim().toLowerCase() == trimmedTitle,
@@ -110,7 +130,14 @@ class DeckService extends ChangeNotifier {
     );
 
     await _repository.addFlashcard(deck, flashcard);
-    deck.flashcards.add(flashcard);
+    if (!_isInitialized) {
+      await init();
+    } else {
+      final index = _decks.indexWhere((d) => d.id == deck.id);
+      if (index != -1) {
+        _decks[index].flashcards.add(flashcard);
+      }
+    }
     notifyListeners();
   }
 
@@ -124,11 +151,31 @@ class DeckService extends ChangeNotifier {
     flashcard.answer = answer.trim();
 
     await _repository.updateDeck(deck);
+    if (!_isInitialized) {
+      await init();
+    } else {
+      final deckIndex = _decks.indexWhere((d) => d.id == deck.id);
+      if (deckIndex != -1) {
+        final cardIndex =
+            _decks[deckIndex].flashcards.indexWhere((f) => f.id == flashcard.id);
+        if (cardIndex != -1) {
+          _decks[deckIndex].flashcards[cardIndex] = flashcard;
+        }
+      }
+    }
     notifyListeners();
   }
 
   Future<void> updateDeck(Deck deck) async {
     await _repository.updateDeck(deck);
+    if (!_isInitialized) {
+      await init();
+    } else {
+      final index = _decks.indexWhere((d) => d.id == deck.id);
+      if (index != -1) {
+        _decks[index] = deck;
+      }
+    }
     notifyListeners();
   }
 
@@ -137,12 +184,24 @@ class DeckService extends ChangeNotifier {
     required Flashcard flashcard,
   }) async {
     await _repository.deleteFlashcard(deck, flashcard);
-    deck.flashcards.remove(flashcard);
+    if (!_isInitialized) {
+      await init();
+    } else {
+      final deckIndex = _decks.indexWhere((d) => d.id == deck.id);
+      if (deckIndex != -1) {
+        _decks[deckIndex].flashcards.removeWhere((f) => f.id == flashcard.id);
+      }
+    }
     notifyListeners();
   }
 
   Future<void> deleteDeck(Deck deck) async {
     await _repository.deleteDeck(deck);
+    if (!_isInitialized) {
+      await init();
+    } else {
+      _decks.removeWhere((d) => d.id == deck.id);
+    }
     notifyListeners();
   }
 }

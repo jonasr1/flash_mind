@@ -74,23 +74,18 @@ class _DecksScreenState extends State<DecksScreen> {
               child: AnimatedBuilder(
                 animation: scope.deckService,
                 builder: (context, _) {
-                  return FutureBuilder<List<Deck>>(
-                    future: scope.deckService.getDecks(),
-                    builder: (context, snapshot) {
-                      final decks = snapshot.data ?? [];
-                      return Scrollbar(
-                        thumbVisibility: true,
-                        thickness: 5.0,
-                        child: ListView(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                          children: [
-                            DecksSummary(decks: decks),
-                            const SizedBox(height: 24),
-                            DeckList(decks: decks),
-                          ],
-                        ),
-                      );
-                    },
+                  final decks = scope.deckService.decks;
+                  return Scrollbar(
+                    thumbVisibility: true,
+                    thickness: 5.0,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      children: [
+                        DecksSummary(decks: decks),
+                        const SizedBox(height: 24),
+                        DeckList(decks: decks),
+                      ],
+                    ),
                   );
                 },
               ),

@@ -49,9 +49,10 @@ void main() {
   late DeckService deckService;
   late MockDeckRepository repository;
 
-  setUp(() {
+  setUp(() async {
     repository = MockDeckRepository();
     deckService = DeckService(repository: repository);
+    await deckService.init();
   });
 
   test('deleteDeck removes deck from repository', () async {
