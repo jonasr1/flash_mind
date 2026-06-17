@@ -27,10 +27,13 @@ class HeaderSection extends StatelessWidget {
                 color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                Icons.psychology_outlined,
-                size: 32,
-                color: colorScheme.primary,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/icons/flashmind_icon.png',
+                  width: 32,
+                  height: 32,
+                ),
               ),
             ),
             const SizedBox(width: 16),

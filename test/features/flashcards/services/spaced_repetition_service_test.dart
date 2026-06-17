@@ -112,7 +112,7 @@ void main() {
         expect(reloadedCard.timesReviewed, 1);
 
         final expectedNextReview = DateTime.now().add(
-          const Duration(minutes: 10),
+          SpacedRepetitionService.reviewIntervals[1],
         );
         expect(
           reloadedCard.nextReviewAt
@@ -141,7 +141,9 @@ void main() {
         expect(card.reviewStep, 2);
         expect(card.timesReviewed, 2);
 
-        final expectedNextReview = DateTime.now().add(const Duration(hours: 1));
+        final expectedNextReview = DateTime.now().add(
+          SpacedRepetitionService.reviewIntervals[2],
+        );
         expect(
           card.nextReviewAt.difference(expectedNextReview).inSeconds.abs() < 5,
           isTrue,
@@ -208,7 +210,7 @@ void main() {
         expect(finalCard.timesReviewed, 1);
 
         final expectedNextReview = DateTime.now().add(
-          const Duration(minutes: 10),
+          SpacedRepetitionService.reviewIntervals[1],
         );
         expect(
           finalCard.nextReviewAt
