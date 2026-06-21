@@ -11,7 +11,10 @@ import 'package:flash_mind/features/flashcards/widgets/empty_review_state.dart';
 import 'package:flash_mind/features/flashcards/widgets/session_header.dart';
 import 'package:flash_mind/features/flashcards/widgets/session_progress.dart';
 import 'package:flash_mind/features/flashcards/widgets/xp_gain_label.dart';
+import 'package:flash_mind/features/home/widgets/onboarding_tooltip.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import 'package:flash_mind/core/app_scope.dart';
 import '../widgets/flashcard_view.dart';
@@ -32,12 +35,82 @@ class XpGainData {
 }
 
 class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
+  final GlobalKey _flashcardKey = GlobalKey();
+  final GlobalKey _ratingKey = GlobalKey();
   bool isAnswerVisible = false;
   int currentIndex = 0;
   FlashcardAchievement? currentAchievement;
   final List<XpGainData> _xpGains = [];
 
   bool _isProcessingReview = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ShowcaseView.register(
+      scope: 'flashcards',
+      onFinish: () async {
+        final prefs = await SharedPreferences.getInstance();
+        if (isAnswerVisible) {
+          await prefs.setBool('has_seen_rating_tour', true);
+        } else {
+          await prefs.setBool('has_seen_study_tour', true);
+        }
+      },
+      onDismiss: (key) async {
+        final prefs = await SharedPreferences.getInstance();
+        if (key == _flashcardKey) {
+          await prefs.setBool('has_seen_study_tour', true);
+        } else if (key == _ratingKey) {
+          await prefs.setBool('has_seen_rating_tour', true);
+        } else {
+          if (isAnswerVisible) {
+            await prefs.setBool('has_seen_rating_tour', true);
+          } else {
+            await prefs.setBool('has_seen_study_tour', true);
+          }
+        }
+      },
+      enableAutoScroll: true,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startStudyTourIfNeeded();
+    });
+  }
+
+  @override
+  void dispose() {
+    ShowcaseView.getNamed('flashcards').unregister();
+    super.dispose();
+  }
+
+  Future<void> _startStudyTourIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTour = prefs.getBool('has_seen_study_tour') ?? false;
+    final dueFlashcards = _getDueFlashcards(DateTime.now());
+    if (!hasSeenTour && dueFlashcards.isNotEmpty) {
+      if (mounted) {
+        ShowcaseView.getNamed('flashcards').startShowCase([
+          _flashcardKey,
+        ]);
+      }
+    }
+  }
+
+  Future<void> _startRatingTourIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTour = prefs.getBool('has_seen_rating_tour') ?? false;
+    final dueFlashcards = _getDueFlashcards(DateTime.now());
+    if (!hasSeenTour && isAnswerVisible && dueFlashcards.isNotEmpty) {
+      if (mounted) {
+        ShowcaseView.getNamed('flashcards').startShowCase([
+          _ratingKey,
+        ]);
+      }
+    }
+  }
+
 
   List<Flashcard> _getDueFlashcards(DateTime now) {
     return widget.deck.flashcards
@@ -202,6 +275,12 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     setState(() {
       isAnswerVisible = !isAnswerVisible;
     });
+
+    if (isAnswerVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startRatingTourIfNeeded();
+      });
+    }
   }
 
   @override
@@ -234,8 +313,8 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                       builder: (context, _) {
                         return SessionProgress(
                           currentIndex: safeCurrentIndex,
-                          totalCards: dueFlashcards.length,
                           combo: progressController.progress.combo,
+                          totalCards: dueFlashcards.length,
                         );
                       },
                     ),
@@ -246,18 +325,37 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                   Expanded(
                     child: dueFlashcards.isEmpty
                         ? const EmptyReviewState()
-                        : FlashcardView(
-                            key: ValueKey(currentFlashcard!.id),
-                            question: currentFlashcard.question,
-                            answer: currentFlashcard.answer,
-                            isAnswerVisible: isAnswerVisible,
-                            onTap: toggleAnswer,
+                        : Showcase.withWidget(
+                            scope: 'flashcards',
+                            key: _flashcardKey,
+                            targetBorderRadius: BorderRadius.circular(16),
+                            targetShapeBorder: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            container: OnboardingTooltip(
+                              title: 'Revelar a Resposta',
+                              description: 'Toque no card para ver a resposta.',
+                              currentStep: 1,
+                              totalSteps: 1,
+                              onNext: () => ShowcaseView.getNamed('flashcards').dismiss(),
+                              onSkip: () => ShowcaseView.getNamed('flashcards').dismiss(),
+                            ),
+                            child: FlashcardView(
+                              key: ValueKey(currentFlashcard!.id),
+                              question: currentFlashcard.question,
+                              answer: currentFlashcard.answer,
+                              isAnswerVisible: isAnswerVisible,
+                              onTap: toggleAnswer,
+                            ),
                           ),
                   ),
                   if (isAnswerVisible &&
                       dueFlashcards.isNotEmpty &&
                       !_isProcessingReview)
-                    AnswerButtons(onSelected: reviewCurrentFlashcard),
+                    AnswerButtons(
+                      onSelected: reviewCurrentFlashcard,
+                      showcaseKey: _ratingKey,
+                    ),
                 ],
               ),
             ),

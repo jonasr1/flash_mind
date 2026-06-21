@@ -6,6 +6,8 @@ import 'package:flash_mind/features/decks/widgets/create_deck_button.dart';
 import 'package:flash_mind/features/decks/widgets/deck_list.dart';
 import 'package:flash_mind/features/decks/widgets/decks_summary.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class DecksScreen extends StatefulWidget {
   const DecksScreen({super.key});
@@ -15,6 +17,55 @@ class DecksScreen extends StatefulWidget {
 }
 
 class _DecksScreenState extends State<DecksScreen> {
+  final GlobalKey _firstDeckCardKey = GlobalKey();
+  final GlobalKey _createDeckButtonKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    ShowcaseView.register(
+      scope: 'decks',
+      onFinish: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_decks_tour', true);
+      },
+      onDismiss: (key) async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_decks_tour', true);
+      },
+      enableAutoScroll: true,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startOnboardingTourIfNeeded();
+    });
+  }
+
+  @override
+  void dispose() {
+    ShowcaseView.getNamed('decks').unregister();
+    super.dispose();
+  }
+
+  Future<void> _startOnboardingTourIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTour = prefs.getBool('has_seen_decks_tour') ?? false;
+    final scope = AppScope.of(context);
+    if (!hasSeenTour) {
+      if (mounted) {
+        if (scope.deckService.decks.isEmpty) {
+          ShowcaseView.getNamed('decks').startShowCase([_createDeckButtonKey]);
+        } else {
+          ShowcaseView.getNamed('decks').startShowCase([
+            _createDeckButtonKey,
+            _firstDeckCardKey,
+          ]);
+        }
+      }
+    }
+  }
+
+
   Future<void> openCreateDeckScreen() async {
     final createdDeck = await Navigator.of(
       context,
@@ -83,7 +134,10 @@ class _DecksScreenState extends State<DecksScreen> {
                       children: [
                         DecksSummary(decks: decks),
                         const SizedBox(height: 24),
-                        DeckList(decks: decks),
+                        DeckList(
+                          decks: decks,
+                          firstDeckCardKey: _firstDeckCardKey,
+                        ),
                       ],
                     ),
                   );
@@ -92,7 +146,11 @@ class _DecksScreenState extends State<DecksScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-              child: CreateDeckButton(onPressed: openCreateDeckScreen),
+              child: CreateDeckButton(
+                onPressed: openCreateDeckScreen,
+                showcaseKey: _createDeckButtonKey,
+                totalSteps: scope.deckService.decks.isEmpty ? 1 : 2,
+              ),
             ),
           ],
         ),

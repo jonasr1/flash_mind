@@ -1,15 +1,18 @@
+import 'package:flash_mind/features/home/widgets/onboarding_tooltip.dart';
 import 'package:flutter/material.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import '../models/review_rating.dart';
 
 class AnswerButtons extends StatelessWidget {
   final void Function(ReviewRating rating) onSelected;
+  final GlobalKey? showcaseKey;
 
-  const AnswerButtons({super.key, required this.onSelected});
+  const AnswerButtons({super.key, required this.onSelected, this.showcaseKey});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final buttonsRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
@@ -37,6 +40,39 @@ class AnswerButtons extends StatelessWidget {
         ),
       ],
     );
+
+    if (showcaseKey != null) {
+      return Showcase.withWidget(
+        scope: 'flashcards',
+        key: showcaseKey!,
+        targetPadding: EdgeInsets.all(0),
+        targetBorderRadius: BorderRadius.circular(16),
+        targetShapeBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        tooltipPosition: TooltipPosition.top,
+        container: OnboardingTooltip(
+          title: 'Avalie sua resposta',
+          description:
+              'Escolha a opção que melhor representa o quanto você lembrou da resposta.\n\n'
+              'O FlashMind usa essa avaliação para definir quando mostrar este card novamente.\n\n'
+              '• Não sabia\n'
+              '  Você não conseguiu lembrar da resposta.\n\n'
+              '• Difícil\n'
+              '  Você lembrou com dificuldade.\n\n'
+              '• Fácil\n'
+              '  Você lembrou com facilidade.\n\n'
+              '💡 Dica: toque novamente no card para voltar à pergunta.',
+          currentStep: 1,
+          totalSteps: 1,
+          onNext: () => ShowcaseView.getNamed('flashcards').dismiss(),
+          onSkip: () => ShowcaseView.getNamed('flashcards').dismiss(),
+        ),
+        child: buttonsRow,
+      );
+    }
+
+    return buttonsRow;
   }
 }
 
@@ -94,10 +130,8 @@ class _AnswerButtonState extends State<_AnswerButton>
           minimumSize: const Size(0, 44),
           backgroundColor: widget.color,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 16,
-          ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),

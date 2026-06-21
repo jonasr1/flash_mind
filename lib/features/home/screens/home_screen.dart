@@ -3,6 +3,9 @@ import 'package:flash_mind/features/home/widgets/start_button.dart';
 import 'package:flash_mind/features/home/widgets/stats_section.dart';
 import 'package:flash_mind/features/home/widgets/stats_help_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flash_mind/features/home/widgets/onboarding_tooltip.dart';
 
 import "package:flash_mind/features/home/data/quotes_data.dart";
 
@@ -21,7 +24,48 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    ShowcaseView.register(
+      scope: 'home',
+      onFinish: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_home_tour', true);
+      },
+      onDismiss: (key) async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_home_tour', true);
+      },
+      enableAutoScroll: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    ShowcaseView.getNamed('home').unregister();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const HomeScreenContent();
+  }
+}
+
+class HomeScreenContent extends StatefulWidget {
+  const HomeScreenContent({super.key});
+
+  @override
+  State<HomeScreenContent> createState() => _HomeScreenContentState();
+}
+
+class _HomeScreenContentState extends State<HomeScreenContent> {
   Timer? _refreshTimer;
+
+  final GlobalKey _availableCardsKey = GlobalKey();
+  final GlobalKey _startButtonKey = GlobalKey();
+  final GlobalKey _levelCardKey = GlobalKey();
 
   @override
   void initState() {
@@ -31,6 +75,32 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {});
       }
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startOnboardingTourIfNeeded();
+    });
+  }
+
+  Future<void> _startOnboardingTourIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTour = prefs.getBool('has_seen_home_tour') ?? false;
+    if (!hasSeenTour) {
+      if (mounted) {
+        ShowcaseView.getNamed('home').startShowCase([
+          _availableCardsKey,
+          _startButtonKey,
+          _levelCardKey,
+        ]);
+      }
+    }
+  }
+
+  Future<void> _dismissTour() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_home_tour', true);
+    if (mounted) {
+      ShowcaseView.getNamed('home').dismiss();
+    }
   }
 
   @override
@@ -85,8 +155,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         AnimatedBuilder(
                           animation: progressController,
                           builder: (context, _) {
-                            return LevelCard(
+                            final levelCard = LevelCard(
                               progress: progressController.progress,
+                            );
+
+                            return Showcase.withWidget(
+                              scope: 'home',
+                              key: _levelCardKey,
+                              targetBorderRadius: BorderRadius.circular(16),
+                              targetShapeBorder: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              container: OnboardingTooltip(
+                                title: 'Seu Progresso',
+                                description:
+                                    'Ganhe XP enquanto estuda e suba de nível com o tempo.',
+                                currentStep: 3,
+                                totalSteps: 3,
+                                onNext: _dismissTour,
+                                onSkip: _dismissTour,
+                              ),
+                              child: levelCard,
                             );
                           },
                         ),
@@ -127,7 +216,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               now: DateTime.now(),
                             );
 
-                            return StatsSection(stats: stats);
+                            return StatsSection(
+                              stats: stats,
+                              availableCardsKey: _availableCardsKey,
+                            );
                           },
                         ),
                         const SizedBox(height: 32),
@@ -137,9 +229,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 20),
-              child: StartButton(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+              child: StartButton(showcaseKey: _startButtonKey),
             ),
           ],
         ),
