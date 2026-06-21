@@ -22,7 +22,12 @@ class ReviewService {
         _userProgressController = userProgressController,
         _deckService = deckService;
 
-  Future<void> reviewFlashcard(Deck deck, Flashcard card, ReviewRating rating) async {
+  Future<void> reviewFlashcard(
+    Deck deck,
+    Flashcard card,
+    ReviewRating rating, {
+    int? customXp,
+  }) async {
     _spacedRepetitionService.reviewCard(card, rating);
 
     await _deckService.updateFlashcard(
@@ -36,6 +41,7 @@ class ReviewService {
       _userProgressController.progress,
       rating,
       now: DateTime.now(),
+      customXp: customXp,
     );
     _userProgressController.setProgress(updatedProgress);
   }

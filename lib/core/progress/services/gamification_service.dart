@@ -20,8 +20,9 @@ class GamificationService {
     UserProgress progress,
     ReviewRating rating, {
     required DateTime now,
+    int? customXp,
   }) {
-    final earnedXp = xpForRating(rating);
+    final earnedXp = customXp ?? xpForRating(rating);
 
     final today = DateTime(now.year, now.month, now.day);
     final last = progress.lastStudyDate;

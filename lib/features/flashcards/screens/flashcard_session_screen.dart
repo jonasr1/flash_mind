@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flash_mind/core/progress/services/gamification_service.dart';
 import 'package:flash_mind/features/decks/models/deck.dart';
 import 'package:flash_mind/features/flashcards/models/flashcard.dart';
 import 'package:flash_mind/features/flashcards/models/flashcard_achievement.dart';
@@ -38,7 +37,13 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   final GlobalKey _flashcardKey = GlobalKey();
   final GlobalKey _ratingKey = GlobalKey();
   bool isAnswerVisible = false;
-  int currentIndex = 0;
+
+  List<Flashcard> _sessionQueue = [];
+  int _initialQueueLength = 0;
+  int _completedCardsCount = 0;
+  final Map<String, int> _cardExposureCount = {};
+  final Set<String> _forgotXpAwardedCards = {};
+
   FlashcardAchievement? currentAchievement;
   final List<XpGainData> _xpGains = [];
 
@@ -74,6 +79,9 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
       enableAutoScroll: true,
     );
 
+    _sessionQueue = _getDueFlashcards(DateTime.now());
+    _initialQueueLength = _sessionQueue.length;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startStudyTourIfNeeded();
     });
@@ -88,12 +96,9 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   Future<void> _startStudyTourIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenTour = prefs.getBool('has_seen_study_tour') ?? false;
-    final dueFlashcards = _getDueFlashcards(DateTime.now());
-    if (!hasSeenTour && dueFlashcards.isNotEmpty) {
+    if (!hasSeenTour && _sessionQueue.isNotEmpty) {
       if (mounted) {
-        ShowcaseView.getNamed('flashcards').startShowCase([
-          _flashcardKey,
-        ]);
+        ShowcaseView.getNamed('flashcards').startShowCase([_flashcardKey]);
       }
     }
   }
@@ -101,28 +106,17 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
   Future<void> _startRatingTourIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenTour = prefs.getBool('has_seen_rating_tour') ?? false;
-    final dueFlashcards = _getDueFlashcards(DateTime.now());
-    if (!hasSeenTour && isAnswerVisible && dueFlashcards.isNotEmpty) {
+    if (!hasSeenTour && isAnswerVisible && _sessionQueue.isNotEmpty) {
       if (mounted) {
-        ShowcaseView.getNamed('flashcards').startShowCase([
-          _ratingKey,
-        ]);
+        ShowcaseView.getNamed('flashcards').startShowCase([_ratingKey]);
       }
     }
   }
-
 
   List<Flashcard> _getDueFlashcards(DateTime now) {
     return widget.deck.flashcards
         .where((card) => card.nextReviewAt.isBefore(now))
         .toList();
-  }
-
-  int _normalizeIndex(int index, int length) {
-    if (length <= 0) return 0;
-    if (index < 0) return 0;
-    if (index >= length) return length - 1;
-    return index;
   }
 
   void _showAchievement(FlashcardAchievement achievement) {
@@ -133,23 +127,27 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
 
   Future<void> reviewCurrentFlashcard(ReviewRating rating) async {
     if (_isProcessingReview) return;
+    if (_sessionQueue.isEmpty) return;
 
-    final currentDueFlashcards = _getDueFlashcards(DateTime.now());
-    if (currentDueFlashcards.isEmpty) return;
-
-    final safeCurrentIndex = _normalizeIndex(
-      currentIndex,
-      currentDueFlashcards.length,
-    );
-    final currentCard = currentDueFlashcards[safeCurrentIndex];
+    final currentCard = _sessionQueue.first;
     var shouldShowSessionCompletedDialog = false;
 
     final progressController = AppScope.of(context).userProgressController;
     final oldProgress = progressController.progress;
 
-    // 0. XP Gain Feedback (Internal trigger)
-    const gamificationService = GamificationService();
-    final xpGained = gamificationService.xpForRating(rating);
+    // Calculate actual XP to award (and animation) (FR-01, FR-02, FR-03, FR-05)
+    int xpGained = 0;
+    if (rating == ReviewRating.forgot) {
+      if (!_forgotXpAwardedCards.contains(currentCard.id)) {
+        xpGained = 5;
+      } else {
+        xpGained = 0;
+      }
+    } else if (rating == ReviewRating.difficult) {
+      xpGained = 10;
+    } else if (rating == ReviewRating.easy) {
+      xpGained = 15;
+    }
 
     setState(() {
       _isProcessingReview = true;
@@ -157,14 +155,19 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     });
 
     try {
-      await AppScope.of(
-        context,
-      ).reviewService.reviewFlashcard(widget.deck, currentCard, rating);
+      await AppScope.of(context).reviewService.reviewFlashcard(
+        widget.deck,
+        currentCard,
+        rating,
+        customXp: xpGained,
+      );
 
       if (!mounted) return;
 
       setState(() {
-        _xpGains.add(XpGainData(UniqueKey(), xpGained));
+        if (xpGained > 0) {
+          _xpGains.add(XpGainData(UniqueKey(), xpGained));
+        }
       });
 
       final newProgress = progressController.progress;
@@ -222,17 +225,42 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
       }
 
       setState(() {
-        final updatedDueFlashcards = _getDueFlashcards(DateTime.now());
-        shouldShowSessionCompletedDialog = updatedDueFlashcards.isEmpty;
+        final exposures = (_cardExposureCount[currentCard.id] ?? 0) + 1;
+        _cardExposureCount[currentCard.id] = exposures;
 
-        currentIndex = _normalizeIndex(
-          safeCurrentIndex,
-          updatedDueFlashcards.length,
-        );
+        _sessionQueue.removeAt(0);
+
+        if (rating == ReviewRating.forgot) {
+          if (exposures < 3) {
+            final insertIndex = _sessionQueue.length >= 2
+                ? 2
+                : _sessionQueue.length;
+            _sessionQueue.insert(insertIndex, currentCard);
+          }
+          _forgotXpAwardedCards.add(currentCard.id);
+        } else {
+          _completedCardsCount++;
+        }
+
+        shouldShowSessionCompletedDialog = _sessionQueue.isEmpty;
       });
 
       if (shouldShowSessionCompletedDialog) {
         showSessionCompletedDialog();
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Error saving review: $error\n$stackTrace');
+      if (mounted) {
+        setState(() {
+          isAnswerVisible = true;
+        });
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save review. Please try again.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -285,14 +313,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dueFlashcards = _getDueFlashcards(DateTime.now());
-    final safeCurrentIndex = _normalizeIndex(
-      currentIndex,
-      dueFlashcards.length,
-    );
-    final currentFlashcard = dueFlashcards.isEmpty
-        ? null
-        : dueFlashcards[safeCurrentIndex];
+    final currentFlashcard = _sessionQueue.isEmpty ? null : _sessionQueue.first;
     final progressController = AppScope.of(context).userProgressController;
 
     return Scaffold(
@@ -306,15 +327,15 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                 children: [
                   SessionHeader(deckTitle: widget.deck.title),
                   const SizedBox(height: 12),
-                  if (dueFlashcards.isNotEmpty) ...[
+                  if (_sessionQueue.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     AnimatedBuilder(
                       animation: progressController,
                       builder: (context, _) {
                         return SessionProgress(
-                          currentIndex: safeCurrentIndex,
+                          currentIndex: _completedCardsCount,
                           combo: progressController.progress.combo,
-                          totalCards: dueFlashcards.length,
+                          totalCards: _initialQueueLength,
                         );
                       },
                     ),
@@ -323,7 +344,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                   Divider(color: Theme.of(context).colorScheme.outlineVariant),
                   const SizedBox(height: 24),
                   Expanded(
-                    child: dueFlashcards.isEmpty
+                    child: _sessionQueue.isEmpty
                         ? const EmptyReviewState()
                         : Showcase.withWidget(
                             scope: 'flashcards',
@@ -337,8 +358,10 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                               description: 'Toque no card para ver a resposta.',
                               currentStep: 1,
                               totalSteps: 1,
-                              onNext: () => ShowcaseView.getNamed('flashcards').dismiss(),
-                              onSkip: () => ShowcaseView.getNamed('flashcards').dismiss(),
+                              onNext: () =>
+                                  ShowcaseView.getNamed('flashcards').dismiss(),
+                              onSkip: () =>
+                                  ShowcaseView.getNamed('flashcards').dismiss(),
                             ),
                             child: FlashcardView(
                               key: ValueKey(currentFlashcard!.id),
@@ -350,7 +373,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                           ),
                   ),
                   if (isAnswerVisible &&
-                      dueFlashcards.isNotEmpty &&
+                      _sessionQueue.isNotEmpty &&
                       !_isProcessingReview)
                     AnswerButtons(
                       onSelected: reviewCurrentFlashcard,
