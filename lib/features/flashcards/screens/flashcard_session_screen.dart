@@ -7,7 +7,6 @@ import 'package:flash_mind/features/flashcards/utils/review_utils.dart';
 import 'package:flash_mind/features/flashcards/widgets/achievement_banner.dart';
 import 'package:flash_mind/features/flashcards/widgets/answer_buttons.dart';
 import 'package:flash_mind/features/flashcards/widgets/empty_review_state.dart';
-import 'package:flash_mind/features/flashcards/widgets/session_header.dart';
 import 'package:flash_mind/features/flashcards/widgets/session_progress.dart';
 import 'package:flash_mind/features/flashcards/widgets/xp_gain_label.dart';
 import 'package:flash_mind/features/home/widgets/onboarding_tooltip.dart';
@@ -317,6 +316,13 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
     final progressController = AppScope.of(context).userProgressController;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Baralho: ${widget.deck.title}',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Stack(
           children: [
@@ -325,8 +331,6 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SessionHeader(deckTitle: widget.deck.title),
-                  const SizedBox(height: 12),
                   if (_sessionQueue.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     AnimatedBuilder(

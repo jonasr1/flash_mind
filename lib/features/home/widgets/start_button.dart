@@ -17,7 +17,7 @@ class StartButton extends StatelessWidget {
         ).push(MaterialPageRoute(builder: (_) => const DecksScreen()));
       },
       icon: const Icon(Icons.play_arrow_rounded, size: 24),
-      label: const Text('Iniciar Sessão'),
+      label: const Text('Ver Meus Baralhos'),
     );
 
     if (showcaseKey != null) {

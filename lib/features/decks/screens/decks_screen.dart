@@ -95,24 +95,15 @@ class _DecksScreenState extends State<DecksScreen> {
     final scope = AppScope.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Baralhos",
+          style: Theme.of(context).textTheme.displaySmall,
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                  ),
-                  Text(
-                    "Baralhos",
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                ],
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Divider(

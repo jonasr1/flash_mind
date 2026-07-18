@@ -123,7 +123,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: HeaderSection(
-                actionIcon: Icons.bar_chart_rounded,
+                actionIcon: Icons.local_fire_department_rounded,
                 onActionPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const StreakScreen()),

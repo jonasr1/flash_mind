@@ -5,6 +5,9 @@ import 'package:flash_mind/features/flashcards/screens/create_flashcard_screen.d
 import 'package:flash_mind/features/flashcards/screens/edit_flashcard_screen.dart';
 import '../controllers/deck_details_controller.dart';
 import '../models/deck.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flash_mind/features/home/widgets/onboarding_tooltip.dart';
 
 class DeckDetailsScreen extends StatefulWidget {
   final Deck deck;
@@ -25,6 +28,13 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
   String? _titleError;
   String? _descriptionError;
 
+  final GlobalKey _appBarTitleKey = GlobalKey();
+  final GlobalKey _titleFieldKey = GlobalKey();
+  final GlobalKey _descriptionFieldKey = GlobalKey();
+  final GlobalKey _flashcardsListKey = GlobalKey();
+  final GlobalKey _newCardButtonKey = GlobalKey();
+  final GlobalKey _firstFlashcardKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +44,23 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
 
     titleController.addListener(_checkForChanges);
     descriptionController.addListener(_checkForChanges);
+
+    ShowcaseView.register(
+      scope: 'deck_details',
+      onFinish: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_deck_details_tour', true);
+      },
+      onDismiss: (key) async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_seen_deck_details_tour', true);
+      },
+      enableAutoScroll: true,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startOnboardingTourIfNeeded();
+    });
   }
 
   void _checkForChanges() {
@@ -165,16 +192,58 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
     descriptionController.removeListener(_checkForChanges);
     titleController.dispose();
     descriptionController.dispose();
+    ShowcaseView.getNamed('deck_details').unregister();
     super.dispose();
+  }
+
+  Future<void> _startOnboardingTourIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTour = prefs.getBool('has_seen_deck_details_tour') ?? false;
+    if (!hasSeenTour) {
+      if (mounted) {
+        final steps = [
+          _appBarTitleKey,
+          _titleFieldKey,
+          _descriptionFieldKey,
+          _flashcardsListKey,
+          _newCardButtonKey,
+        ];
+        if (_deck.flashcards.isNotEmpty) {
+          steps.add(_firstFlashcardKey);
+        }
+        ShowcaseView.getNamed('deck_details').startShowCase(steps);
+      }
+    }
+  }
+
+  Future<void> _dismissTour() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_deck_details_tour', true);
+    if (mounted) {
+      ShowcaseView.getNamed('deck_details').dismiss();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final totalSteps = _deck.flashcards.isNotEmpty ? 6 : 5;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar baralho'),
+        title: Showcase.withWidget(
+          scope: 'deck_details',
+          key: _appBarTitleKey,
+          container: OnboardingTooltip(
+            title: 'Gerenciar Baralho',
+            description: 'Nesta tela você pode gerenciar todas as informações e cartões do baralho selecionado.',
+            currentStep: 1,
+            totalSteps: totalSteps,
+            onNext: () => ShowcaseView.getNamed('deck_details').next(),
+            onSkip: _dismissTour,
+          ),
+          child: const Text('Editar baralho'),
+        ),
         actions: [
           if (_hasChanges)
             TextButton(
@@ -189,26 +258,46 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              builder: (_) => CreateFlashcardScreen(deck: _deck),
-            ),
-          );
-          if (result == true && mounted) {
-            await _refreshDeck();
-            if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Flashcard criado com sucesso'),
-                duration: Duration(seconds: 2),
+      floatingActionButton: Showcase.withWidget(
+        scope: 'deck_details',
+        key: _newCardButtonKey,
+        targetBorderRadius: BorderRadius.circular(16),
+        targetShapeBorder: const StadiumBorder(),
+        container: OnboardingTooltip(
+          title: 'Adicionar Flashcard',
+          description: 'Toque aqui para criar e adicionar um novo cartão de estudo a este baralho.',
+          currentStep: 5,
+          totalSteps: totalSteps,
+          onNext: () {
+            if (totalSteps == 5) {
+              _dismissTour();
+            } else {
+              ShowcaseView.getNamed('deck_details').next();
+            }
+          },
+          onSkip: _dismissTour,
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () async {
+            final result = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => CreateFlashcardScreen(deck: _deck),
               ),
             );
-          }
-        },
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Nova carta'),
+            if (result == true && mounted) {
+              await _refreshDeck();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Flashcard criado com sucesso'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Nova carta'),
+        ),
       ),
       body: SafeArea(
         child: Scrollbar(
@@ -223,32 +312,76 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
             ),
             child: Column(
               children: [
-                TextField(
-                  controller: titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Título',
-                    hintText: 'Ex.: Python',
-                    errorText: _titleError,
+                Showcase.withWidget(
+                  scope: 'deck_details',
+                  key: _titleFieldKey,
+                  targetBorderRadius: BorderRadius.circular(12),
+                  targetShapeBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  enabled: !_isSaving,
+                  container: OnboardingTooltip(
+                    title: 'Título do Baralho',
+                    description: 'Você pode editar o título do baralho diretamente neste campo.',
+                    currentStep: 2,
+                    totalSteps: totalSteps,
+                    onNext: () => ShowcaseView.getNamed('deck_details').next(),
+                    onSkip: _dismissTour,
+                  ),
+                  child: TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Título',
+                      hintText: 'Ex.: Python',
+                      errorText: _titleError,
+                    ),
+                    enabled: !_isSaving,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: descriptionController,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    labelText: 'Descrição',
-                    hintText: 'Ex.: Flashcards sobre Python',
-                    errorText: _descriptionError,
+                Showcase.withWidget(
+                  scope: 'deck_details',
+                  key: _descriptionFieldKey,
+                  targetBorderRadius: BorderRadius.circular(12),
+                  targetShapeBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  enabled: !_isSaving,
+                  container: OnboardingTooltip(
+                    title: 'Descrição do Baralho',
+                    description: 'Você pode editar a descrição do baralho para detalhar o conteúdo estudado.',
+                    currentStep: 3,
+                    totalSteps: totalSteps,
+                    onNext: () => ShowcaseView.getNamed('deck_details').next(),
+                    onSkip: _dismissTour,
+                  ),
+                  child: TextField(
+                    controller: descriptionController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      labelText: 'Descrição',
+                      hintText: 'Ex.: Flashcards sobre Python',
+                      errorText: _descriptionError,
+                    ),
+                    enabled: !_isSaving,
+                  ),
                 ),
                 const SizedBox(height: 24),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Flashcards (${_deck.flashcards.length})',
-                    style: textTheme.titleMedium,
+                Showcase.withWidget(
+                  scope: 'deck_details',
+                  key: _flashcardsListKey,
+                  container: OnboardingTooltip(
+                    title: 'Lista de Flashcards',
+                    description: 'Aqui são exibidos todos os cartões pertencentes a este baralho, mostrando suas perguntas e respostas.',
+                    currentStep: 4,
+                    totalSteps: totalSteps,
+                    onNext: () => ShowcaseView.getNamed('deck_details').next(),
+                    onSkip: _dismissTour,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Flashcards (${_deck.flashcards.length})',
+                      style: textTheme.titleMedium,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -259,7 +392,7 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
                   itemBuilder: (_, index) {
                     final flashcard = _deck.flashcards[index];
         
-                    return Card(
+                    final cardItem = Card(
                       child: InkWell(
                         onTap: () async {
                           final result = await Navigator.of(context)
@@ -318,6 +451,23 @@ class _DeckDetailsScreenState extends State<DeckDetailsScreen> {
                         ),
                       ),
                     );
+
+                    if (index == 0) {
+                      return Showcase.withWidget(
+                        scope: 'deck_details',
+                        key: _firstFlashcardKey,
+                        container: OnboardingTooltip(
+                          title: 'Ações do Flashcard',
+                          description: 'Toque em um cartão para editá-lo ou clique na lixeira para removê-lo.',
+                          currentStep: 6,
+                          totalSteps: totalSteps,
+                          onNext: _dismissTour,
+                          onSkip: _dismissTour,
+                        ),
+                        child: cardItem,
+                      );
+                    }
+                    return cardItem;
                   },
                 ),
               ],
