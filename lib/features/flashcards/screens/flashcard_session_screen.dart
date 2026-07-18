@@ -277,7 +277,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
         return AlertDialog(
           title: const Text('Sessão concluída 🎉'),
           content: const Text(
-            'Você revisou todos os flashcards deste baralho.',
+            'Os próximos cartões serão disponibilizados automaticamente no momento adequado para reforçar sua aprendizagem.',
           ),
           actions: [
             TextButton(
@@ -288,7 +288,7 @@ class _FlashcardSessionScreenState extends State<FlashcardSessionScreen> {
                   Navigator.of(this.context).pop();
                 }
               },
-              child: const Text('Voltar'),
+              child: const Text('Voltar aos baralhos'),
             ),
           ],
         );

@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 class HeaderSection extends StatelessWidget {
   final IconData actionIcon;
   final VoidCallback onActionPressed;
+  final IconData? secondaryActionIcon;
+  final VoidCallback? onSecondaryActionPressed;
 
   const HeaderSection({
     super.key,
     required this.actionIcon,
     required this.onActionPressed,
+    this.secondaryActionIcon,
+    this.onSecondaryActionPressed,
   });
 
   @override
@@ -49,7 +53,15 @@ class HeaderSection extends StatelessWidget {
             ),
           ],
         ),
-        IconButton(onPressed: onActionPressed, icon: Icon(actionIcon)),
+        Row(
+          children: [
+            IconButton(onPressed: onActionPressed, icon: Icon(actionIcon)),
+            if (secondaryActionIcon != null && onSecondaryActionPressed != null) ...[
+              const SizedBox(width: 4),
+              IconButton(onPressed: onSecondaryActionPressed, icon: Icon(secondaryActionIcon)),
+            ],
+          ],
+        ),
       ],
     );
   }

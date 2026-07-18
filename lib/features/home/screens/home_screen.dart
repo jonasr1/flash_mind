@@ -11,6 +11,7 @@ import "package:flash_mind/features/home/data/quotes_data.dart";
 
 import 'package:flash_mind/core/app_scope.dart';
 import 'package:flash_mind/features/home/widgets/header_section.dart';
+import 'package:flash_mind/features/home/widgets/settings_bottom_sheet.dart';
 import 'package:flash_mind/features/home/widgets/level_card.dart';
 import 'package:flash_mind/features/home/widgets/quote_card.dart';
 import 'package:flash_mind/features/home/models/stats_data.dart';
@@ -129,6 +130,8 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                     MaterialPageRoute(builder: (_) => const StreakScreen()),
                   );
                 },
+                secondaryActionIcon: Icons.settings_rounded,
+                onSecondaryActionPressed: () => showSettings(context),
               ),
             ),
             const Padding(

@@ -33,18 +33,51 @@ Future<void> main() async {
     deckService: deckService,
   );
 
+  final themeIndex = prefs.getInt('theme_mode');
+  final initialThemeMode = themeIndex != null && themeIndex >= 0 && themeIndex < ThemeMode.values.length
+      ? ThemeMode.values[themeIndex]
+      : ThemeMode.system;
+
   runApp(
     AppScope(
       deckService: deckService,
       userProgressController: userProgressController,
       reviewService: reviewService,
-      child: const FlashcardApp(),
+      child: FlashcardApp(initialThemeMode: initialThemeMode),
     ),
   );
 }
 
-class FlashcardApp extends StatelessWidget {
-  const FlashcardApp({super.key});
+class FlashcardApp extends StatefulWidget {
+  final ThemeMode initialThemeMode;
+
+  const FlashcardApp({super.key, required this.initialThemeMode});
+
+  static FlashcardAppState of(BuildContext context) =>
+      context.findAncestorStateOfType<FlashcardAppState>()!;
+
+  @override
+  State<FlashcardApp> createState() => FlashcardAppState();
+}
+
+class FlashcardAppState extends State<FlashcardApp> {
+  late ThemeMode _themeMode;
+
+  ThemeMode get themeMode => _themeMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _themeMode = widget.initialThemeMode;
+  }
+
+  Future<void> changeThemeMode(ThemeMode mode) async {
+    setState(() {
+      _themeMode = mode;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('theme_mode', mode.index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +86,7 @@ class FlashcardApp extends StatelessWidget {
     return MaterialApp(
       title: 'FlashMind',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
+      themeMode: _themeMode,
 
       // LIGHT THEME
       theme: ThemeData(
