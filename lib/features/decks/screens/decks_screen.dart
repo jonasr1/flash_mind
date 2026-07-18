@@ -20,9 +20,16 @@ class _DecksScreenState extends State<DecksScreen> {
   final GlobalKey _firstDeckCardKey = GlobalKey();
   final GlobalKey _createDeckButtonKey = GlobalKey();
 
+  late final TextEditingController _searchController;
+  String _searchQuery = '';
+  bool _filterOnlyPending = false;
+
   @override
   void initState() {
     super.initState();
+    _searchController = TextEditingController();
+    _searchController.addListener(_onSearchChanged);
+
     ShowcaseView.register(
       scope: 'decks',
       onFinish: () async {
@@ -43,8 +50,16 @@ class _DecksScreenState extends State<DecksScreen> {
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
     ShowcaseView.getNamed('decks').unregister();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text;
+    });
   }
 
   Future<void> _startOnboardingTourIfNeeded() async {
@@ -91,14 +106,15 @@ class _DecksScreenState extends State<DecksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final scope = AppScope.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Baralhos",
-          style: Theme.of(context).textTheme.displaySmall,
+          style: theme.textTheme.displaySmall,
         ),
       ),
       body: SafeArea(
@@ -112,11 +128,74 @@ class _DecksScreenState extends State<DecksScreen> {
                 color: colorScheme.outlineVariant,
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Pesquisar baralho...',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded),
+                              onPressed: () {
+                                _searchController.clear();
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      FilterChip(
+                        label: const Text('Todos'),
+                        selected: !_filterOnlyPending,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              _filterOnlyPending = false;
+                            });
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      FilterChip(
+                        label: const Text('Pendentes'),
+                        selected: _filterOnlyPending,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              _filterOnlyPending = true;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Expanded(
               child: AnimatedBuilder(
                 animation: scope.deckService,
                 builder: (context, _) {
                   final decks = scope.deckService.decks;
+                  final filteredDecks = decks.where((deck) {
+                    final matchesSearch = deck.title
+                        .toLowerCase()
+                        .contains(_searchQuery.toLowerCase());
+                    final matchesFilter = !_filterOnlyPending || (deck.progress < 1.0);
+                    return matchesSearch && matchesFilter;
+                  }).toList();
+
                   return Scrollbar(
                     thumbVisibility: true,
                     thickness: 5.0,
@@ -125,10 +204,43 @@ class _DecksScreenState extends State<DecksScreen> {
                       children: [
                         DecksSummary(decks: decks),
                         const SizedBox(height: 24),
-                        DeckList(
-                          decks: decks,
-                          firstDeckCardKey: _firstDeckCardKey,
-                        ),
+                        if (filteredDecks.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.search_off_rounded,
+                                    size: 64,
+                                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Nenhum baralho localizado',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Tente ajustar seus termos de pesquisa ou filtros.',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          DeckList(
+                            decks: filteredDecks,
+                            firstDeckCardKey: _firstDeckCardKey,
+                          ),
                       ],
                     ),
                   );
