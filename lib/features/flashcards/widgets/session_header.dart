@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 class SessionHeader extends StatelessWidget {
   final String deckTitle;
+  final VoidCallback? onHelpPressed;
 
   const SessionHeader({
     super.key,
     required this.deckTitle,
+    this.onHelpPressed,
   });
 
   @override
@@ -25,9 +27,15 @@ class SessionHeader extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
-        const SizedBox(
-          width: 48,
-        ),
+        if (onHelpPressed != null)
+          IconButton(
+            onPressed: onHelpPressed,
+            icon: const Icon(Icons.help_outline),
+          )
+        else
+          const SizedBox(
+            width: 48,
+          ),
       ],
     );
   }

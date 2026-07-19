@@ -81,7 +81,7 @@ class SrsHelpBottomSheet extends StatelessWidget {
               context,
               label: 'Difícil',
               color: colorScheme.tertiary,
-              text: 'O cartão retornará em breve (normalmente no dia seguinte) para consolidar a memória.',
+              text: 'O cartão retornará em breve para consolidar a memória.',
             ),
             const SizedBox(height: 12),
 
@@ -90,7 +90,7 @@ class SrsHelpBottomSheet extends StatelessWidget {
               context,
               label: 'Fácil',
               color: colorScheme.primary,
-              text: 'O cartão retornará após um intervalo maior (vários dias), pois você já domina o conceito.',
+              text: 'Indica que o conteúdo foi lembrado com facilidade. O aplicativo aumentará gradualmente o intervalo até a próxima revisão.',
             ),
             const SizedBox(height: 32),
 
